@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel page-panel">
+    <div class="section-header">
+        <h2>Notes</h2>
+        <a href="#newNote" class="primary small">Add note</a>
+    </div>
+    <form id="newNote" method="post" class="form-grid small-form">
+        <label>Title</label>
+        <input type="text" name="title" required />
+        <label>Content</label>
+        <textarea name="content" rows="5" required></textarea>
+        <button type="submit" class="primary">Save note</button>
+    </form>
+    <div class="note-grid">
+        {% for note in notes %}
+        <div class="note-card">
+            <div class="note-meta"><strong>{{ note.title }}</strong><span>{{ note.created_at.strftime('%b %d') }}</span></div>
+            <p>{{ note.content }}</p>
+            <a href="{{ url_for('main.delete_note', note_id=note.id) }}" class="danger small" onclick="return confirm('Delete this note?');">Delete</a>
+        </div>
+        {% else %}
+        <div class="muted">Add notes to capture ideas, plans, and reflections.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
