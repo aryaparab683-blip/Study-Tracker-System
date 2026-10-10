@@ -1,42 +1,32 @@
 {% extends "base.html" %}
+{% block title %}Calendar · Study Tracker{% endblock %}
 {% block content %}
 <div class="panel page-panel">
     <div class="calendar-header">
         <div>
             <h2>Calendar</h2>
-            <p class="calendar-subtitle">Weekly session overview with a calendar-style layout.</p>
+            <p class="calendar-subtitle">{{ week_start.strftime('%b %d') }} – {{ week_end.strftime('%b %d, %Y') }} · {{ total_minutes }} min studied</p>
         </div>
-        <div class="calendar-meta">
-            <span>Week view</span>
-        </div>
-    </div>
-
-    <div class="calendar-weekdays">
-        {% set day_names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %}
-        {% for day_name in day_names %}
-        <div>{{ day_name }}</div>
-        {% endfor %}
+        <nav class="calendar-nav" aria-label="Week navigation">
+            <a class="secondary" href="{{ url_for('main.calendar', week=offset - 1) }}" aria-label="Previous week">&larr; Prev</a>
+            {% if offset != 0 %}<a class="secondary" href="{{ url_for('main.calendar') }}">This week</a>{% endif %}
+            <a class="secondary" href="{{ url_for('main.calendar', week=offset + 1) }}" aria-label="Next week">Next &rarr;</a>
+        </nav>
     </div>
 
     <div class="calendar-grid">
-        {% set day_names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
-        {% for day_index in range(7) %}
-        <div class="calendar-day">
-            <div class="day-label">{{ day_names[day_index] }}</div>
+        {% for day in days %}
+        <div class="calendar-day{% if day.is_today %} is-today{% endif %}">
+            <div class="day-label">{{ day.date.strftime('%a') }} <span class="day-date">{{ day.date.strftime('%b %d') }}</span></div>
             <div class="calendar-day-events">
-                {% set found = false %}
-                {% for session in sessions %}
-                    {% if session.created_at.weekday() == day_index %}
-                        {% set found = true %}
-                        <div class="calendar-card">
-                            <strong>{{ session.title }}</strong>
-                            <span>{{ session.duration }} mins</span>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                {% if not found %}
+                {% for session in day.sessions %}
+                <div class="calendar-card">
+                    <strong>{{ session.title }}</strong>
+                    <span>{{ session.duration }} mins</span>
+                </div>
+                {% else %}
                 <div class="calendar-empty">No sessions</div>
-                {% endif %}
+                {% endfor %}
             </div>
         </div>
         {% endfor %}

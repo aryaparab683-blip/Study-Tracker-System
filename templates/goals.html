@@ -1,34 +1,52 @@
 {% extends "base.html" %}
+{% block title %}Goals · Study Tracker{% endblock %}
 {% block content %}
 <div class="panel page-panel">
     <div class="section-header">
-        <h2>Goals</h2>
-        <a href="#newGoal" class="primary small">New goal</a>
+        <div>
+            <h2>Goals</h2>
+            <p class="page-sub">Set a target and update your progress as you go.</p>
+        </div>
     </div>
     <form id="newGoal" method="post" class="form-grid small-form">
-        <label>Title</label>
-        <input type="text" name="title" required />
-        <label>Current progress</label>
-        <input type="number" name="progress" min="0" value="0" />
-        <label>Target</label>
-        <input type="number" name="target" min="1" value="100" required />
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+            <label for="f-title">Title</label>
+            <input type="text" id="f-title" name="title" maxlength="120" required />
+        </div>
+        <div class="field">
+            <label for="f-progress">Current progress</label>
+            <input type="number" id="f-progress" name="progress" min="0" value="0" />
+        </div>
+        <div class="field">
+            <label for="f-target">Target</label>
+            <input type="number" id="f-target" name="target" min="1" max="1000000" value="100" required />
+        </div>
         <button type="submit" class="primary">Add goal</button>
     </form>
     <div class="list-card">
         {% for goal in goals %}
+        {% set pct = ((goal.progress / goal.target * 100) if goal.target else 0)|round(1) %}
         <div class="goal-card">
             <div class="goal-header">
                 <strong>{{ goal.title }}</strong>
-                <form action="{{ url_for('main.update_goal', goal_id=goal.id) }}" method="post" class="inline-form">
-                    <input type="number" name="progress" min="0" max="{{ goal.target }}" value="{{ goal.progress }}" />
-                    <button type="submit" class="primary small">Update</button>
-                </form>
+                <div class="item-actions">
+                    <form action="{{ url_for('main.update_goal', goal_id=goal.id) }}" method="post" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="number" name="progress" min="0" max="{{ goal.target }}" value="{{ goal.progress }}" aria-label="Progress for {{ goal.title }}" />
+                        <button type="submit" class="primary small">Update</button>
+                    </form>
+                    <form method="post" action="{{ url_for('main.delete_goal', goal_id=goal.id) }}" class="inline-action" onsubmit="return confirm('Delete this goal?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button type="submit" class="link-btn danger">Delete</button>
+                    </form>
+                </div>
             </div>
-            <div class="progress-bar"><span style="width: {{ (goal.progress / goal.target * 100) if goal.target else 0 }}%"></span></div>
-            <small>{{ goal.progress }}/{{ goal.target }} completed</small>
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ [pct, 100]|min }}%"></span></div>
+            <small>{{ goal.progress }}/{{ goal.target }} completed ({{ pct|int }}%)</small>
         </div>
         {% else %}
-        <div class="muted">Add a goal to stay motivated.</div>
+        <div class="empty">No goals yet. Set a target above, like "Finish 10 sessions this week".</div>
         {% endfor %}
     </div>
 </div>

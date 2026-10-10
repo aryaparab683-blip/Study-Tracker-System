@@ -55,14 +55,14 @@ The **Study Tracker System** helps students:
 
 * 🔐 User Authentication (Login/Register)
 * 📊 Dashboard with productivity insights
-* ✅ Task Management (Add/Edit/Delete)
-* 🎯 Goal Tracking System
+* ✅ Task Management (Add/Complete/Delete)
+* 🎯 Goal Tracking System (Add/Update/Delete)
 * 📚 Subject-wise Organization
 * 📝 Notes Management
 * ⏱️ Pomodoro Timer
 * 📅 Calendar View for sessions
 * 📈 Charts & Analytics
-* 👤 User Profile Management
+* 👤 Profile page (read-only)
 
 ---
 
@@ -80,14 +80,14 @@ study-tracker/
 │
 ├── main.py                # Main Flask application
 ├── models.py              # Database models
+├── utils.py               # CSRF, validation helpers, streak calculation
 ├── requirements.txt       # Dependencies
 │
-├── instance/
-│   └── study_tracker.db   # SQLite database
+├── instance/              # created at runtime: SQLite DB + generated secret_key (git-ignored)
 │
 ├── routes/
 │   ├── auth.py            # Authentication routes
-│   └── main.py            # Core routes
+│   └── main1.py           # Core routes (dashboard, sessions, tasks, goals, calendar...)
 │
 ├── templates/
 │   ├── base.html
@@ -120,6 +120,7 @@ The application uses **SQLite3** with the following entities:
 * **Subjects** – Study categorization
 * **Sessions** – Study session tracking
 * **Notes** – User notes storage
+* **Reminders** – Reminder messages (display only for now; no UI to create them yet)
 
 
 ## ⚙️ Installation & Setup
@@ -143,7 +144,19 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### 4️⃣ Open in Browser
+### 4️⃣ (Optional) Configuration
+
+All settings are optional environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `SECRET_KEY` | Session signing key. If unset, a random key is generated once and stored in `instance/secret_key`. |
+| `FLASK_DEBUG=1` | Enable Flask debug mode (never in production). |
+| `STUDY_TRACKER_SEED_DEMO=1` | Create a demo account (`student@example.com` / `password`) with sample data when the database is empty. |
+| `DATABASE_URL` | Override the default SQLite database. |
+| `SESSION_COOKIE_SECURE=1` | Mark the session cookie HTTPS-only (set when served over HTTPS). |
+
+### 5️⃣ Open in Browser
 
 ```
 http://127.0.0.1:5000

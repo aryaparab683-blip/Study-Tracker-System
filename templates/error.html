@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Study Tracker{% endblock %}
+{% block content %}
+<div class="card auth-card">
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <p><a class="primary small-link" href="{{ url_for('main.dashboard') }}">Back to dashboard</a></p>
+</div>
+{% endblock %}

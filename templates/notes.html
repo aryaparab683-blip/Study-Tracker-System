@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Notes · Study Tracker{% endblock %}
+{% block content %}
+<div class="panel page-panel">
+    <div class="section-header">
+        <div>
+            <h2>Notes</h2>
+            <p class="page-sub">Quick thoughts, formulas and plans.</p>
+        </div>
+    </div>
+    <form id="newNote" method="post" class="form-grid small-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+            <label for="f-title">Title</label>
+            <input type="text" id="f-title" name="title" maxlength="120" required />
+        </div>
+        <div class="field full">
+            <label for="f-content">Content</label>
+            <textarea id="f-content" name="content" rows="5" maxlength="10000" required></textarea>
+        </div>
+        <button type="submit" class="primary">Save note</button>
+    </form>
+    <div class="note-grid">
+        {% for note in notes %}
+        <div class="note-card">
+            <div class="note-meta"><strong>{{ note.title }}</strong><span>{{ note.created_at.strftime('%b %d, %Y') }}</span></div>
+            <p>{{ note.content }}</p>
+            <form method="post" action="{{ url_for('main.delete_note', note_id=note.id) }}" class="inline-action" onsubmit="return confirm('Delete this note?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button type="submit" class="link-btn danger">Delete</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="empty">No notes yet. Jot down your first one above.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

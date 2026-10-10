@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Sessions · Study Tracker{% endblock %}
+{% block content %}
+<div class="panel page-panel">
+    <div class="section-header">
+        <div>
+            <h2>Study Sessions</h2>
+            <p class="page-sub">Every focus block you log. Back-date a session if you forgot to add it.</p>
+        </div>
+    </div>
+    <form id="newSession" method="post" class="form-grid small-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+            <label for="f-title">Title</label>
+            <input type="text" id="f-title" name="title" maxlength="120" value="{{ form.get('title', '') }}" required />
+        </div>
+        <div class="field">
+            <label for="f-duration">Duration (minutes)</label>
+            <input type="number" id="f-duration" name="duration" min="1" max="1440" value="{{ form.get('duration', 25) }}" required />
+        </div>
+        <div class="field">
+            <label for="f-date">Date studied</label>
+            <input type="date" id="f-date" name="date" max="{{ today }}" value="{{ form.get('date', today) }}" />
+        </div>
+        <div class="field">
+            <label for="f-subject">Subject</label>
+            <select id="f-subject" name="subject_id">
+            <option value="">No subject</option>
+            {% for subject in subjects %}
+            <option value="{{ subject.id }}" {% if form.get('subject_id') == subject.id|string %}selected{% endif %}>{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+        </div>
+        <div class="field full">
+            <label for="f-notes">Notes</label>
+            <textarea id="f-notes" name="notes" rows="3" maxlength="5000">{{ form.get('notes', '') }}</textarea>
+        </div>
+        <button type="submit" class="primary">Log session</button>
+    </form>
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr><th>Title</th><th>Subject</th><th>Duration</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr>
+                    <td class="wrap" data-label="Title">{{ session.title }}</td>
+                    <td data-label="Subject">{% if session.subject %}<span class="subject-chip" style="--dot: {{ session.subject.color }};">{{ session.subject.name }}</span>{% else %}<span class="muted">General</span>{% endif %}</td>
+                    <td data-label="Duration">{{ session.duration }} min</td>
+                    <td class="date-cell" data-label="Date">{{ session.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="actions" data-label="">
+                        <a href="{{ url_for('main.edit_session', session_id=session.id) }}">Edit</a>
+                        <form method="post" action="{{ url_for('main.delete_session', session_id=session.id) }}" class="inline-action" onsubmit="return confirm('Delete this session?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button type="submit" class="link-btn danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr class="empty-row"><td colspan="5">No sessions yet. Log your first one with the form above.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
