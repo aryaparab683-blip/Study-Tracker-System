@@ -11,7 +11,11 @@
         </div>
         <div class="dash-header-actions">
             <a href="{{ url_for('main.sessions') }}" class="btn-primary-pill">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
                 <span>Log Session</span>
             </a>
         </div>
@@ -23,7 +27,11 @@
             <div class="metric-top">
                 <span class="metric-label">This Week</span>
                 <div class="metric-icon-wrap icon-indigo">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
                 </div>
             </div>
             <div class="metric-value">{{ week_minutes }} <span class="metric-unit">min</span></div>
@@ -36,15 +44,19 @@
             <div class="metric-top">
                 <span class="metric-label">Study Streak</span>
                 <div class="metric-icon-wrap icon-amber">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.784 1.399 8.166-7.333-3.856-7.333 3.856 1.399-8.166-5.934-5.784 8.2-1.192zm0 5.702l-2.223 4.504-4.97.722 3.597 3.506-.849 4.95 4.445-2.337 4.445 2.337-.849-4.95 3.597-3.506-4.97-.722z"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path
+                            d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.784 1.399 8.166-7.333-3.856-7.333 3.856 1.399-8.166-5.934-5.784 8.2-1.192zm0 5.702l-2.223 4.504-4.97.722 3.597 3.506-.849 4.95 4.445-2.337 4.445 2.337-.849-4.95 3.597-3.506-4.97-.722z" />
+                    </svg>
                 </div>
             </div>
-            <div class="metric-value">{{ streak }} <span class="metric-unit">day{{ '' if streak == 1 else 's' }}</span></div>
+            <div class="metric-value">{{ streak }} <span class="metric-unit">day{{ '' if streak == 1 else 's' }}</span>
+            </div>
             <div class="metric-footnote">
                 {% if streak > 0 %}
-                    <span class="footnote-badge success">🔥 Active Streak</span>
+                <span class="footnote-badge success">🔥 Active Streak</span>
                 {% else %}
-                    <span class="footnote-muted">Log a session to start</span>
+                <span class="footnote-muted">Log a session to start</span>
                 {% endif %}
             </div>
         </div>
@@ -53,12 +65,17 @@
             <div class="metric-top">
                 <span class="metric-label">All-time Sessions</span>
                 <div class="metric-icon-wrap icon-emerald">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
                 </div>
             </div>
             <div class="metric-value">{{ total_sessions }} <span class="metric-unit">sessions</span></div>
             <div class="metric-footnote">
-                <span class="footnote-highlight">{{ (total_time / 60)|round(1) if total_time else 0 }} hrs</span> total focus time
+                <span class="footnote-highlight">{{ (total_time / 60)|round(1) if total_time else 0 }} hrs</span> total
+                focus time
             </div>
         </div>
 
@@ -66,7 +83,11 @@
             <div class="metric-top">
                 <span class="metric-label">Open Tasks</span>
                 <div class="metric-icon-wrap icon-rose">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
                 </div>
             </div>
             <div class="metric-value">{{ open_task_count }} <span class="metric-unit">pending</span></div>
@@ -83,7 +104,11 @@
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-badge-icon timer-badge-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
                     </div>
                     <div>
                         <h3>Focus Timer</h3>
@@ -94,16 +119,20 @@
 
             <!-- Timer Mode Selector -->
             <div class="timer-mode-pills" role="tablist">
-                <button type="button" class="mode-pill active" id="modeFocus" data-mode="focus" data-duration="1500">Focus 25m</button>
-                <button type="button" class="mode-pill" id="modeShort" data-mode="short" data-duration="300">Short Break 5m</button>
-                <button type="button" class="mode-pill" id="modeLong" data-mode="long" data-duration="900">Long Break 15m</button>
+                <button type="button" class="mode-pill active" id="modeFocus" data-mode="focus"
+                    data-duration="1500">Focus 25m</button>
+                <button type="button" class="mode-pill" id="modeShort" data-mode="short" data-duration="300">Short Break
+                    5m</button>
+                <button type="button" class="mode-pill" id="modeLong" data-mode="long" data-duration="900">Long Break
+                    15m</button>
             </div>
 
             <!-- SVG Ring and Countdown -->
             <div class="timer-ring-container">
                 <svg class="timer-ring-svg" viewBox="0 0 220 220" width="220" height="220">
                     <circle class="timer-ring-bg" cx="110" cy="110" r="92" stroke-width="12" />
-                    <circle class="timer-ring-progress" id="timerRingProgress" cx="110" cy="110" r="92" stroke-width="12" stroke-dasharray="578" stroke-dashoffset="0" />
+                    <circle class="timer-ring-progress" id="timerRingProgress" cx="110" cy="110" r="92"
+                        stroke-width="12" stroke-dasharray="578" stroke-dashoffset="0" />
                 </svg>
                 <div class="timer-ring-inner">
                     <span class="timer-phase-tag" id="timerMode">FOCUS</span>
@@ -115,15 +144,24 @@
             <!-- Controls -->
             <div class="timer-actions">
                 <button id="startBtn" type="button" class="btn-timer-primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
                     <span>Start</span>
                 </button>
                 <button id="pauseBtn" type="button" class="btn-timer-secondary" disabled>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16" />
+                        <rect x="14" y="4" width="4" height="16" />
+                    </svg>
                     <span>Pause</span>
                 </button>
                 <button id="resetBtn" type="button" class="btn-timer-secondary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                    </svg>
                     <span>Reset</span>
                 </button>
             </div>
@@ -135,7 +173,12 @@
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-badge-icon bar-badge-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
                     </div>
                     <div>
                         <h3>7-Day Study Velocity</h3>
@@ -149,12 +192,10 @@
             </div>
 
             <div class="chart-canvas-container">
-                <canvas id="sevenDayBarChart" 
-                        data-labels='{{ seven_days|map(attribute="label")|list|tojson }}'
-                        data-values='{{ seven_days|map(attribute="minutes")|list|tojson }}'
-                        data-full-dates='{{ seven_days|map(attribute="full_date")|list|tojson }}'
-                        role="img" 
-                        aria-label="7-day study minutes bar chart">
+                <canvas id="sevenDayBarChart" data-labels='{{ seven_days|map(attribute="label")|list|tojson }}'
+                    data-values='{{ seven_days|map(attribute="minutes")|list|tojson }}'
+                    data-full-dates='{{ seven_days|map(attribute="full_date")|list|tojson }}' role="img"
+                    aria-label="7-day study minutes bar chart">
                 </canvas>
             </div>
         </div>
@@ -165,7 +206,13 @@
         <div class="card-header">
             <div class="card-title-group">
                 <div class="card-badge-icon heatmap-badge-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y1="10"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y1="10" />
+                    </svg>
                 </div>
                 <div>
                     <h3>Study Activity Heatmap</h3>
@@ -204,14 +251,9 @@
                     <div class="heatmap-col">
                         {% for day in week %}
                         <div class="heatmap-cell level-{{ day.level }}{% if day.is_today %} is-today-cell{% endif %}{% if day.future %} is-future{% endif %}"
-                             data-date="{{ day.date }}"
-                             data-label="{{ day.label }}"
-                             data-day="{{ day.day_name }}"
-                             data-minutes="{{ day.minutes }}"
-                             data-count="{{ day.count }}"
-                             tabindex="0"
-                             role="gridcell"
-                             aria-label="{{ day.label }}: {{ day.minutes }} minutes studied">
+                            data-date="{{ day.date }}" data-label="{{ day.label }}" data-day="{{ day.day_name }}"
+                            data-minutes="{{ day.minutes }}" data-count="{{ day.count }}" tabindex="0" role="gridcell"
+                            aria-label="{{ day.label }}: {{ day.minutes }} minutes studied">
                         </div>
                         {% endfor %}
                     </div>
@@ -247,7 +289,11 @@
                 <div class="card-header">
                     <div class="card-title-group">
                         <div class="card-badge-icon donut-badge-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                                <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                            </svg>
                         </div>
                         <div>
                             <h3>Subject Distribution</h3>
@@ -259,12 +305,10 @@
 
                 <div class="donut-chart-wrapper">
                     <div class="donut-canvas-box">
-                        <canvas id="subjectChart" 
-                                role="img" 
-                                aria-label="Sessions per subject doughnut chart" 
-                                data-labels='{{ subject_breakdown|map(attribute="name")|list|tojson }}' 
-                                data-values='{{ subject_breakdown|map(attribute="count")|list|tojson }}' 
-                                data-colors='{{ subject_breakdown|map(attribute="color")|list|tojson }}'>
+                        <canvas id="subjectChart" role="img" aria-label="Sessions per subject doughnut chart"
+                            data-labels='{{ subject_breakdown|map(attribute="name")|list|tojson }}'
+                            data-values='{{ subject_breakdown|map(attribute="count")|list|tojson }}'
+                            data-colors='{{ subject_breakdown|map(attribute="color")|list|tojson }}'>
                         </canvas>
                         <div class="donut-center-text" id="donutCenterText">
                             <span class="center-total">{{ total_sessions }}</span>
@@ -282,7 +326,8 @@
                             <span class="subj-count">{{ sb.count }} session{{ '' if sb.count == 1 else 's' }}</span>
                         </div>
                         {% else %}
-                        <div class="empty-compact">No subjects tracked yet. <a href="{{ url_for('main.subjects') }}">Create one</a></div>
+                        <div class="empty-compact">No subjects tracked yet. <a
+                                href="{{ url_for('main.subjects') }}">Create one</a></div>
                         {% endfor %}
                     </div>
                 </div>
@@ -293,7 +338,12 @@
                 <div class="card-header">
                     <div class="card-title-group">
                         <div class="card-badge-icon goal-badge-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <circle cx="12" cy="12" r="6" />
+                                <circle cx="12" cy="12" r="2" />
+                            </svg>
                         </div>
                         <div>
                             <h3>Active Goals</h3>
@@ -317,7 +367,8 @@
                         <div class="goal-item-sub">{{ goal.progress }} of {{ goal.target }} completed</div>
                     </div>
                     {% else %}
-                    <div class="empty-box">No active goals yet. <a href="{{ url_for('main.goals') }}">Set a goal &rarr;</a></div>
+                    <div class="empty-box">No active goals yet. <a href="{{ url_for('main.goals') }}">Set a goal
+                            &rarr;</a></div>
                     {% endfor %}
                 </div>
             </div>
@@ -330,7 +381,11 @@
                 <div class="card-header">
                     <div class="card-title-group">
                         <div class="card-badge-icon session-badge-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
                         </div>
                         <div>
                             <h3>Recent Sessions</h3>
@@ -347,17 +402,19 @@
                             <strong class="session-title">{{ session.title }}</strong>
                             <div class="session-meta">
                                 {% if session.subject %}
-                                    <span class="subject-pill" style="--dot: {{ session.subject.color }};">{{ session.subject.name }}</span>
+                                <span class="subject-pill" style="--dot: {{ session.subject.color }};">{{
+                                    session.subject.name }}</span>
                                 {% else %}
-                                    <span class="subject-pill default-pill">General</span>
+                                <span class="subject-pill default-pill">General</span>
                                 {% endif %}
-                                <span class="session-date">{{ session.created_at.strftime('%b %d') }}</span>
+                                <span class="session-date">{{ (session.created_at|local).strftime('%b %d') }}</span>
                             </div>
                         </div>
                         <div class="session-duration-badge">{{ session.duration }}m</div>
                     </div>
                     {% else %}
-                    <div class="empty-box">No study sessions recorded yet. Start the focus timer above or <a href="{{ url_for('main.sessions') }}">log manually</a>.</div>
+                    <div class="empty-box">No study sessions recorded yet. Start the focus timer above or <a
+                            href="{{ url_for('main.sessions') }}">log manually</a>.</div>
                     {% endfor %}
                 </div>
             </div>
@@ -367,7 +424,11 @@
                 <div class="card-header">
                     <div class="card-title-group">
                         <div class="card-badge-icon task-badge-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 11l3 3L22 4" />
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                            </svg>
                         </div>
                         <div>
                             <h3>Open Tasks</h3>
@@ -380,10 +441,15 @@
                 <div class="dash-task-list">
                     {% for task in open_tasks %}
                     <div class="dash-task-item">
-                        <form method="post" action="{{ url_for('main.toggle_task', task_id=task.id) }}" class="inline-action">
+                        <form method="post" action="{{ url_for('main.toggle_task', task_id=task.id) }}"
+                            class="inline-action">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                            <button type="submit" class="btn-check-toggle" aria-label="Mark task completed" title="Complete task">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            <button type="submit" class="btn-check-toggle" aria-label="Mark task completed"
+                                title="Complete task">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
                             </button>
                         </form>
                         <div class="task-info">
@@ -394,7 +460,8 @@
                         </div>
                     </div>
                     {% else %}
-                    <div class="empty-box">You're completely caught up on tasks! <a href="{{ url_for('main.tasks') }}">Add one &rarr;</a></div>
+                    <div class="empty-box">You're completely caught up on tasks! <a
+                            href="{{ url_for('main.tasks') }}">Add one &rarr;</a></div>
                     {% endfor %}
                 </div>
             </div>
@@ -404,7 +471,11 @@
                 <div class="card-header">
                     <div class="card-title-group">
                         <div class="card-badge-icon note-badge-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
                         </div>
                         <div>
                             <h3>Quick Notes</h3>
@@ -421,7 +492,8 @@
                         <p class="note-item-snippet">{{ note.content[:100] }}{% if note.content|length > 100 %}…{% endif %}</p>
                     </div>
                     {% else %}
-                    <div class="empty-box">No notes yet. <a href="{{ url_for('main.notes') }}">Create your first note &rarr;</a></div>
+                    <div class="empty-box">No notes yet. <a href="{{ url_for('main.notes') }}">Create your first note
+                            &rarr;</a></div>
                     {% endfor %}
                 </div>
             </div>
@@ -437,7 +509,7 @@
         const now = new Date();
         const h = now.getHours();
         const part = h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-        const first = {{ current_user.name.split(' ')[0]|tojson }};
+        const first = {{ current_user.name.split(' ')[0] | tojson }};
         const el = document.getElementById('greeting');
         if (el) el.textContent = part + ', ' + first;
         const sub = document.getElementById('todayLine');

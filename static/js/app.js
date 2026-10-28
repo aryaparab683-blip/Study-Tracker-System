@@ -1,5 +1,18 @@
 // Main Application Scripts: Theme, Mobile Sidebar Drawer, Heatmap Tooltips, and Form Helpers
 
+// --- 0. Timezone cookie: lets the server group sessions by the user's local day ---
+(function () {
+    try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (!tz) return;
+        const m = document.cookie.match(/(?:^|; )tz=([^;]*)/);
+        if (!m || decodeURIComponent(m[1]) !== tz) {
+            const secure = location.protocol === 'https:' ? '; Secure' : '';
+            document.cookie = 'tz=' + encodeURIComponent(tz) + '; path=/; max-age=31536000; SameSite=Lax' + secure;
+        }
+    } catch (e) { /* ignore: server falls back to UTC */ }
+})();
+
 // --- 1. Dark/Light Theme Management ---
 function readTheme() {
     try { return localStorage.getItem('study-theme') || 'light'; } catch (e) { return 'light'; }

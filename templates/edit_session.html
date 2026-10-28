@@ -11,20 +11,22 @@
         </div>
         <div class="field">
             <label for="f-duration">Duration (minutes)</label>
-            <input type="number" id="f-duration" name="duration" value="{{ session.duration }}" min="1" max="1440" required />
+            <input type="number" id="f-duration" name="duration" value="{{ session.duration }}" min="1" max="1440"
+                required />
         </div>
         <div class="field">
             <label for="f-date">Date studied</label>
-            <input type="date" id="f-date" name="date" max="{{ today }}" value="{{ session.created_at.strftime('%Y-%m-%d') }}" />
+            <input type="date" id="f-date" name="date" max="{{ today }}"
+                value="{{ (session.created_at|local).strftime('%Y-%m-%d') }}" />
         </div>
         <div class="field">
             <label for="f-subject">Subject</label>
             <select id="f-subject" name="subject_id">
-            <option value="">No subject</option>
-            {% for subject in subjects %}
-            <option value="{{ subject.id }}" {% if session.subject_id == subject.id %}selected{% endif %}>{{ subject.name }}</option>
-            {% endfor %}
-        </select>
+                <option value="">No subject</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}" {% if session.subject_id == subject.id %}selected{% endif %}>{{ subject.name }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="field full">
             <label for="f-notes">Notes</label>

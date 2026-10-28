@@ -35,7 +35,7 @@ Verified with a 95-check backend regression suite plus real-browser checks at 13
 
 ## Still open (not done in this pass)
 - Tasks/notes can't be edited; no UI to create or dismiss reminders; goals are still manual numbers.
-- Times are UTC (no per-user timezone); login throttle is in-memory (use Redis/Flask-Limiter for multi-worker deploys).
+- Login throttle is in-memory (use Redis/Flask-Limiter for multi-worker deploys).
 - No DB migrations (schema changes still need a fresh DB) and no automated tests committed.
 - "Email already exists" on register still reveals account existence.
 

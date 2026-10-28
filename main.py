@@ -6,7 +6,7 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 
 from models import db, User, Subject, StudySession, Task, Note, Goal, Reminder
-from utils import init_csrf
+from utils import init_csrf, to_local
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -46,6 +46,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     init_csrf(app)
+    app.jinja_env.filters["local"] = to_local  # {{ dt|local }} -> user's timezone
 
     from routes.auth import auth_bp
     from routes.main1 import main_bp

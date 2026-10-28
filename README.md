@@ -184,7 +184,7 @@ Walk through these after any change:
 
 ## ⚠️ Known Limitations
 
-* Times are stored and grouped in UTC (no per-user timezone yet), so sessions logged near midnight may land on a different day.
+* Times are stored in UTC and shown/grouped in your browser's timezone (sent via a `tz` cookie). If JavaScript or cookies are blocked, the app falls back to UTC. The first page after a timezone change may show the old zone until you navigate or refresh.
 * Tasks and notes can't be edited, and reminders have no UI to create or dismiss them.
 * The login throttle is in-memory (per process); use Redis/Flask-Limiter for multi-worker deployments.
 * No database migrations: schema changes need a fresh database.

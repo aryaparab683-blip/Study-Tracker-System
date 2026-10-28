@@ -23,9 +23,10 @@
     <div class="note-grid">
         {% for note in notes %}
         <div class="note-card">
-            <div class="note-meta"><strong>{{ note.title }}</strong><span>{{ note.created_at.strftime('%b %d, %Y') }}</span></div>
+            <div class="note-meta"><strong>{{ note.title }}</strong><span>{{ (note.created_at|local).strftime('%b %d, %Y') }}</span></div>
             <p>{{ note.content }}</p>
-            <form method="post" action="{{ url_for('main.delete_note', note_id=note.id) }}" class="inline-action" onsubmit="return confirm('Delete this note?');">
+            <form method="post" action="{{ url_for('main.delete_note', note_id=note.id) }}" class="inline-action"
+                onsubmit="return confirm('Delete this note?');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <button type="submit" class="link-btn danger">Delete</button>
             </form>

@@ -1,12 +1,13 @@
 """Shared helpers: CSRF protection, input validation, streak calculation."""
 import re
 import secrets
-from datetime import timedelta
+from datetime import datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from flask import abort, request, session
 from flask_login import current_user
 
-from models import Subject, StudySession, utcnow
+from models import Subject, StudySession
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -14,6 +15,50 @@ COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 MAX_DURATION_MIN = 24 * 60
 MAX_GOAL_TARGET = 1_000_000
 MIN_PASSWORD_LEN = 8
+
+
+# ------------------------------------------------------------- timezone
+# Timestamps are stored as naive UTC. The browser sends its IANA timezone name in a "tz"
+# cookie (see static/js/app.js); everything that groups by day or shows a date converts
+# through these helpers. Without a valid cookie we fall back to UTC.
+TZ_RE = re.compile(r"^[A-Za-z0-9_+/-]{1,64}$")
+
+
+def _tz_from_cookie():
+    name = request.cookies.get("tz", "")
+    if TZ_RE.match(name):
+        try:
+            return ZoneInfo(name)
+        except Exception:  # unknown zone, bad key, missing tzdata
+            pass
+    return None
+
+
+def tz_known():
+    return _tz_from_cookie() is not None
+
+
+def user_tz():
+    return _tz_from_cookie() or timezone.utc
+
+
+def to_local(dt):
+    """Naive UTC datetime -> aware datetime in the user's timezone."""
+    return dt.replace(tzinfo=timezone.utc).astimezone(user_tz())
+
+
+def local_today():
+    return datetime.now(user_tz()).date()
+
+
+def local_day_start_utc(day):
+    """Naive-UTC datetime of local midnight at the start of `day`."""
+    return datetime.combine(day, time.min, tzinfo=user_tz()).astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def local_noon_utc(day):
+    """Naive-UTC datetime of local noon on `day` (used for back-dated sessions)."""
+    return datetime.combine(day, time(12, 0), tzinfo=user_tz()).astimezone(timezone.utc).replace(tzinfo=None)
 
 
 # ---------------------------------------------------------------- CSRF
@@ -100,12 +145,12 @@ def safe_next_url(target):
 def compute_streak(user_id):
     """Consecutive days (ending today or yesterday) with at least one logged session."""
     days = {
-        row[0].date()
+        to_local(row[0]).date()
         for row in StudySession.query.with_entities(StudySession.created_at).filter_by(user_id=user_id)
     }
     if not days:
         return 0
-    today = utcnow().date()
+    today = local_today()
     cursor = today if today in days else today - timedelta(days=1)
     streak = 0
     while cursor in days:

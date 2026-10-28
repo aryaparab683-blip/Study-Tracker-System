@@ -16,7 +16,8 @@
         </div>
         <div class="field">
             <label for="f-duration">Duration (minutes)</label>
-            <input type="number" id="f-duration" name="duration" min="1" max="1440" value="{{ form.get('duration', 25) }}" required />
+            <input type="number" id="f-duration" name="duration" min="1" max="1440"
+                value="{{ form.get('duration', 25) }}" required />
         </div>
         <div class="field">
             <label for="f-date">Date studied</label>
@@ -25,11 +26,11 @@
         <div class="field">
             <label for="f-subject">Subject</label>
             <select id="f-subject" name="subject_id">
-            <option value="">No subject</option>
-            {% for subject in subjects %}
-            <option value="{{ subject.id }}" {% if form.get('subject_id') == subject.id|string %}selected{% endif %}>{{ subject.name }}</option>
-            {% endfor %}
-        </select>
+                <option value="">No subject</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}" {% if form.get('subject_id') == subject.id|string %}selected{% endif %}>{{ subject.name }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="field full">
             <label for="f-notes">Notes</label>
@@ -40,25 +41,36 @@
     <div class="table-card">
         <table>
             <thead>
-                <tr><th>Title</th><th>Subject</th><th>Duration</th><th>Date</th><th>Actions</th></tr>
+                <tr>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Duration</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
             <tbody>
                 {% for session in sessions %}
                 <tr>
                     <td class="wrap" data-label="Title">{{ session.title }}</td>
-                    <td data-label="Subject">{% if session.subject %}<span class="subject-chip" style="--dot: {{ session.subject.color }};">{{ session.subject.name }}</span>{% else %}<span class="muted">General</span>{% endif %}</td>
+                    <td data-label="Subject">{% if session.subject %}<span class="subject-chip"
+                            style="--dot: {{ session.subject.color }};">{{ session.subject.name }}</span>{% else %}<span
+                            class="muted">General</span>{% endif %}</td>
                     <td data-label="Duration">{{ session.duration }} min</td>
-                    <td class="date-cell" data-label="Date">{{ session.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="date-cell" data-label="Date">{{ (session.created_at|local).strftime('%b %d, %Y') }}</td>
                     <td class="actions" data-label="">
                         <a href="{{ url_for('main.edit_session', session_id=session.id) }}">Edit</a>
-                        <form method="post" action="{{ url_for('main.delete_session', session_id=session.id) }}" class="inline-action" onsubmit="return confirm('Delete this session?');">
+                        <form method="post" action="{{ url_for('main.delete_session', session_id=session.id) }}"
+                            class="inline-action" onsubmit="return confirm('Delete this session?');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                             <button type="submit" class="link-btn danger">Delete</button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
-                <tr class="empty-row"><td colspan="5">No sessions yet. Log your first one with the form above.</td></tr>
+                <tr class="empty-row">
+                    <td colspan="5">No sessions yet. Log your first one with the form above.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
