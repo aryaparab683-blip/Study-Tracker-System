@@ -1,48 +1,170 @@
 {% extends "base.html" %}
 {% block title %}Tasks · Study Tracker{% endblock %}
+
 {% block content %}
 <div class="panel page-panel">
     <div class="section-header">
         <div>
             <h2>Tasks</h2>
-            <p class="page-sub">Things to finish. Completed tasks drop to the bottom.</p>
+            <p class="page-sub">Action items with priority levels, due dates, and filtering.</p>
         </div>
     </div>
-    <form id="newTask" method="post" class="form-grid small-form">
+
+    <!-- Create Task Form -->
+    <form id="newTask" method="post" class="form-grid task-create-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <div class="field">
-            <label for="f-title">Title</label>
-            <input type="text" id="f-title" name="title" maxlength="120" required />
+        <div class="field title-field">
+            <label for="f-title">Task title</label>
+            <input type="text" id="f-title" name="title" maxlength="120" placeholder="What needs to get done?" required />
         </div>
         <div class="field">
             <label for="f-subject">Subject</label>
             <select id="f-subject" name="subject_id">
-            <option value="">No subject</option>
-            {% for subject in subjects %}
-            <option value="{{ subject.id }}">{{ subject.name }}</option>
-            {% endfor %}
-        </select>
+                <option value="">No subject (General)</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
         </div>
-        <button type="submit" class="primary">Create task</button>
+        <div class="field">
+            <label for="f-priority">Priority</label>
+            <select id="f-priority" name="priority">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="f-due">Due date</label>
+            <input type="date" id="f-due" name="due_date" min="2000-01-01" max="2100-12-31" />
+        </div>
+        <div class="field submit-field">
+            <button type="submit" class="primary">Add task</button>
+        </div>
     </form>
-    <div class="list-card">
+
+    <!-- Task Filter & Sort Toolbar -->
+    <div class="task-toolbar">
+        <div class="task-status-tabs">
+            <a href="{{ url_for('main.tasks', status='all', priority=filters.priority, subject_id=filters.subject_id, sort=filters.sort) }}"
+                class="tab-pill {% if filters.status == 'all' and not filters.overdue %}active{% endif %}">
+                All <span class="tab-count">{{ filters.total_count }}</span>
+            </a>
+            <a href="{{ url_for('main.tasks', status='pending', priority=filters.priority, subject_id=filters.subject_id, sort=filters.sort) }}"
+                class="tab-pill {% if filters.status == 'pending' and not filters.overdue %}active{% endif %}">
+                Pending <span class="tab-count">{{ filters.pending_count }}</span>
+            </a>
+            <a href="{{ url_for('main.tasks', status='completed', priority=filters.priority, subject_id=filters.subject_id, sort=filters.sort) }}"
+                class="tab-pill {% if filters.status == 'completed' %}active{% endif %}">
+                Completed <span class="tab-count">{{ filters.completed_count }}</span>
+            </a>
+            {% if filters.overdue_count > 0 %}
+            <a href="{{ url_for('main.tasks', overdue='1', priority=filters.priority, subject_id=filters.subject_id, sort=filters.sort) }}"
+                class="tab-pill tab-overdue {% if filters.overdue %}active{% endif %}">
+                Overdue <span class="tab-count danger">{{ filters.overdue_count }}</span>
+            </a>
+            {% endif %}
+        </div>
+
+        <form method="get" action="{{ url_for('main.tasks') }}" class="task-filter-controls">
+            <input type="hidden" name="status" value="{{ filters.status }}" />
+            {% if filters.overdue %}
+            <input type="hidden" name="overdue" value="1" />
+            {% endif %}
+
+            <div class="control-item">
+                <label for="filter-priority" class="sr-only">Priority</label>
+                <select id="filter-priority" name="priority" onchange="this.form.submit()">
+                    <option value="All" {% if filters.priority == 'All' %}selected{% endif %}>All priorities</option>
+                    <option value="High" {% if filters.priority == 'High' %}selected{% endif %}>High priority</option>
+                    <option value="Medium" {% if filters.priority == 'Medium' %}selected{% endif %}>Medium priority</option>
+                    <option value="Low" {% if filters.priority == 'Low' %}selected{% endif %}>Low priority</option>
+                </select>
+            </div>
+
+            <div class="control-item">
+                <label for="filter-subject" class="sr-only">Subject</label>
+                <select id="filter-subject" name="subject_id" onchange="this.form.submit()">
+                    <option value="" {% if not filters.subject_id %}selected{% endif %}>All subjects</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}" {% if filters.subject_id == subject.id %}selected{% endif %}>{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="control-item">
+                <label for="filter-sort" class="sr-only">Sort by</label>
+                <select id="filter-sort" name="sort" onchange="this.form.submit()">
+                    <option value="created" {% if filters.sort == 'created' %}selected{% endif %}>Newest first</option>
+                    <option value="due_date" {% if filters.sort == 'due_date' %}selected{% endif %}>Due date (soonest)</option>
+                    <option value="priority" {% if filters.sort == 'priority' %}selected{% endif %}>Priority (High to Low)</option>
+                </select>
+            </div>
+
+            {% if filters.priority != 'All' or filters.subject_id or filters.overdue or filters.status != 'all' or filters.sort != 'created' %}
+            <a href="{{ url_for('main.tasks') }}" class="link-btn-clear" title="Clear all filters">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Task List -->
+    <div class="list-card task-list-card">
         {% for task in tasks %}
-        <div class="list-item">
-            <span class="task-title {% if task.completed %}completed{% endif %}">{{ task.title }}</span>
-            <div class="item-actions">
+        <div class="list-item task-row-item {% if task.completed %}is-completed{% endif %}">
+            <div class="task-item-main">
                 <form method="post" action="{{ url_for('main.toggle_task', task_id=task.id) }}" class="inline-action">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                    <button type="submit" class="link-btn">{{ 'Undo' if task.completed else 'Done' }}</button>
+                    <button type="submit" class="btn-task-toggle {% if task.completed %}checked{% endif %}"
+                        aria-label="{{ 'Mark as pending' if task.completed else 'Mark as completed' }}"
+                        title="{{ 'Mark as pending' if task.completed else 'Mark as completed' }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </button>
                 </form>
-                <form method="post" action="{{ url_for('main.delete_task', task_id=task.id) }}" class="inline-action" onsubmit="return confirm('Remove this task?');">
+
+                <div class="task-details">
+                    <div class="task-title-line">
+                        <span class="task-title {% if task.completed %}completed{% endif %}">{{ task.title }}</span>
+                        {% if task.priority == 'High' %}
+                        <span class="prio-tag prio-high" title="High Priority">High</span>
+                        {% elif task.priority == 'Low' %}
+                        <span class="prio-tag prio-low" title="Low Priority">Low</span>
+                        {% elif task.priority == 'Medium' %}
+                        <span class="prio-tag prio-med" title="Medium Priority">Med</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="task-meta-line">
+                        {% if task.subject %}
+                        <span class="task-subj-tag" style="--subj-dot: {{ task.subject.color or '#8E88A3' }};">{{ task.subject.name }}</span>
+                        {% endif %}
+
+                        {% if task.due_info.label %}
+                        <span class="task-due-badge {{ task.due_info.badge_class }}">{{ task.due_info.label }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-actions">
+                <a href="{{ url_for('main.edit_task', task_id=task.id) }}" class="link-btn">Edit</a>
+                <form method="post" action="{{ url_for('main.delete_task', task_id=task.id) }}" class="inline-action"
+                    onsubmit="return confirm('Remove this task?');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <button type="submit" class="link-btn danger">Remove</button>
                 </form>
             </div>
-            {% if task.subject %}<small class="muted">{{ task.subject.name }}</small>{% endif %}
         </div>
         {% else %}
-        <div class="empty">Nothing to do. Add a task above when something comes up.</div>
+        <div class="empty">
+            {% if filters.total_count == 0 %}
+            Nothing to do. Add a task above when something comes up.
+            {% else %}
+            No tasks match your current filter settings. <a href="{{ url_for('main.tasks') }}">View all tasks &rarr;</a>
+            {% endif %}
+        </div>
         {% endfor %}
     </div>
 </div>

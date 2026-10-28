@@ -3,7 +3,7 @@ from datetime import datetime, time, timedelta
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import case, func
 
 from models import db, Subject, StudySession, Task, Note, Goal, Reminder, utcnow
 from utils import (
@@ -238,7 +238,20 @@ def dashboard_view():
     )
     open_tasks_q = Task.query.filter_by(user_id=uid, completed=False)
     open_task_count = open_tasks_q.count()
-    open_tasks = open_tasks_q.order_by(Task.created_at.desc()).limit(5).all()
+    overdue_task_count = open_tasks_q.filter(Task.due_date < today).count()
+    prio_order = case((Task.priority == "High", 1), (Task.priority == "Medium", 2), (Task.priority == "Low", 3), else_=4)
+    open_tasks = (
+        open_tasks_q
+        .order_by(
+            Task.due_date.asc().nullslast(),
+            prio_order.asc(),
+            Task.created_at.desc(),
+        )
+        .limit(5)
+        .all()
+    )
+    for t in open_tasks:
+        t.due_info = format_task_due_status(t, today)
 
     total_sessions = StudySession.query.filter_by(user_id=uid).count()
     total_time = db.session.query(func.coalesce(func.sum(StudySession.duration), 0)).filter(StudySession.user_id == uid).scalar()
@@ -346,6 +359,7 @@ def dashboard_view():
         dashboard_insights=dashboard_insights,
         open_tasks=open_tasks,
         open_task_count=open_task_count,
+        overdue_task_count=overdue_task_count,
         streak=compute_streak(uid),
         subject_breakdown=subject_breakdown,
         seven_days=seven_days,
@@ -571,24 +585,217 @@ def delete_subject(subject_id):
 
 
 # ---------------------------------------------------------------------- tasks
+def parse_task_due_date(field_name="due_date"):
+    """Optional 'due_date' field for tasks. Returns (date_obj or None, error or None)."""
+    raw = (request.form.get(field_name) or "").strip()
+    if not raw:
+        return None, None
+    try:
+        chosen = datetime.strptime(raw, "%Y-%m-%d").date()
+    except ValueError:
+        return None, "Due date must be a valid date in YYYY-MM-DD format."
+    if chosen.year < 2000 or chosen.year > 2100:
+        return None, "Due date year must be between 2000 and 2100."
+    return chosen, None
+
+
+def parse_task_priority(field_name="priority", default="Medium"):
+    raw = (request.form.get(field_name) or default).strip().capitalize()
+    if raw not in ("Low", "Medium", "High"):
+        return None, "Priority must be Low, Medium, or High."
+    return raw, None
+
+
+def format_task_due_status(task, today):
+    """Calculates relative due status and badge presentation for tasks."""
+    if not task.due_date:
+        return {
+            "status": "none",
+            "badge_class": "",
+            "label": "",
+            "is_overdue": False,
+            "is_due_today": False,
+        }
+    delta = (task.due_date - today).days
+    if task.completed:
+        return {
+            "status": "completed",
+            "badge_class": "badge-due-muted",
+            "label": f"Due {task.due_date.strftime('%b %d')}",
+            "is_overdue": False,
+            "is_due_today": False,
+        }
+    if delta < 0:
+        days_over = abs(delta)
+        return {
+            "status": "overdue",
+            "badge_class": "badge-due-overdue",
+            "label": f"Overdue ({days_over}d)" if days_over > 1 else "Overdue (1d)",
+            "is_overdue": True,
+            "is_due_today": False,
+        }
+    elif delta == 0:
+        return {
+            "status": "due_today",
+            "badge_class": "badge-due-today",
+            "label": "Due today",
+            "is_overdue": False,
+            "is_due_today": True,
+        }
+    elif delta <= 7:
+        return {
+            "status": "upcoming",
+            "badge_class": "badge-due-soon",
+            "label": f"In {delta}d ({task.due_date.strftime('%b %d')})",
+            "is_overdue": False,
+            "is_due_today": False,
+        }
+    else:
+        return {
+            "status": "future",
+            "badge_class": "badge-due-future",
+            "label": f"Due {task.due_date.strftime('%b %d')}",
+            "is_overdue": False,
+            "is_due_today": False,
+        }
+
+
 @main_bp.route("/tasks", methods=["GET", "POST"])
 @login_required
 def tasks():
     subjects = Subject.query.filter_by(user_id=current_user.id).all()
+    today = local_today()
+
     if request.method == "POST":
         title, e1 = form_text("title", 120, "Task title")
         subject_id, e2 = owned_subject_id()
-        error = e1 or e2
+        priority, e3 = parse_task_priority()
+        due_date, e4 = parse_task_due_date()
+        error = e1 or e2 or e3 or e4
         if error:
             flash(error, "error")
         else:
-            db.session.add(Task(title=title, subject_id=subject_id, user_id=current_user.id))
+            db.session.add(Task(
+                title=title,
+                subject_id=subject_id,
+                priority=priority,
+                due_date=due_date,
+                user_id=current_user.id,
+            ))
             db.session.commit()
             flash("Task created.", "success")
             return redirect(url_for("main.tasks"))
-    items = (Task.query.filter_by(user_id=current_user.id)
-             .order_by(Task.completed.asc(), Task.created_at.desc()).all())
-    return render_template("tasks.html", tasks=items, subjects=subjects)
+
+    # Parse and sanitize filters with safe fallbacks
+    raw_status = (request.args.get("status") or "all").lower()
+    status_filter = raw_status if raw_status in ("all", "pending", "completed") else "all"
+
+    raw_priority = (request.args.get("priority") or "all").capitalize()
+    priority_filter = raw_priority if raw_priority in ("All", "Low", "Medium", "High") else "All"
+
+    raw_subject = (request.args.get("subject_id") or "").strip()
+    subject_filter = None
+    if raw_subject.isdigit():
+        subj_id_val = int(raw_subject)
+        if any(s.id == subj_id_val for s in subjects):
+            subject_filter = subj_id_val
+
+    overdue_only = request.args.get("overdue") == "1"
+
+    raw_sort = (request.args.get("sort") or "created").lower()
+    sort_by = raw_sort if raw_sort in ("created", "due_date", "priority") else "created"
+
+    # Base query restricted strictly to authenticated user
+    query = Task.query.filter_by(user_id=current_user.id)
+
+    # Apply filters
+    if status_filter == "pending":
+        query = query.filter(Task.completed == False)
+    elif status_filter == "completed":
+        query = query.filter(Task.completed == True)
+
+    if priority_filter in ("Low", "Medium", "High"):
+        query = query.filter(Task.priority == priority_filter)
+
+    if subject_filter is not None:
+        query = query.filter(Task.subject_id == subject_filter)
+
+    if overdue_only:
+        query = query.filter(Task.completed == False, Task.due_date < today)
+
+    # Apply sort
+    prio_order = case((Task.priority == "High", 1), (Task.priority == "Medium", 2), (Task.priority == "Low", 3), else_=4)
+    if sort_by == "due_date":
+        query = query.order_by(Task.completed.asc(), Task.due_date.asc().nullslast(), prio_order.asc(), Task.created_at.desc())
+    elif sort_by == "priority":
+        query = query.order_by(Task.completed.asc(), prio_order.asc(), Task.due_date.asc().nullslast(), Task.created_at.desc())
+    else:
+        query = query.order_by(Task.completed.asc(), Task.created_at.desc())
+
+    items = query.all()
+    for t in items:
+        t.due_info = format_task_due_status(t, today)
+
+    # Counts for tab badges
+    all_user_tasks = Task.query.filter_by(user_id=current_user.id).all()
+    total_count = len(all_user_tasks)
+    pending_count = sum(1 for t in all_user_tasks if not t.completed)
+    completed_count = sum(1 for t in all_user_tasks if t.completed)
+    overdue_count = sum(1 for t in all_user_tasks if not t.completed and t.due_date and t.due_date < today)
+
+    current_filters = {
+        "status": status_filter,
+        "priority": priority_filter,
+        "subject_id": subject_filter or "",
+        "overdue": overdue_only,
+        "sort": sort_by,
+        "total_count": total_count,
+        "pending_count": pending_count,
+        "completed_count": completed_count,
+        "overdue_count": overdue_count,
+    }
+
+    return render_template(
+        "tasks.html",
+        tasks=items,
+        subjects=subjects,
+        filters=current_filters,
+        today=today.isoformat(),
+    )
+
+
+@main_bp.route("/tasks/edit/<int:task_id>", methods=["GET", "POST"])
+@login_required
+def edit_task(task_id):
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+    subjects = Subject.query.filter_by(user_id=current_user.id).all()
+    today = local_today()
+
+    if request.method == "POST":
+        title, e1 = form_text("title", 120, "Task title")
+        subject_id, e2 = owned_subject_id()
+        priority, e3 = parse_task_priority()
+        due_date, e4 = parse_task_due_date()
+        error = e1 or e2 or e3 or e4
+        if error:
+            flash(error, "error")
+        else:
+            task.title = title
+            task.subject_id = subject_id
+            task.priority = priority
+            task.due_date = due_date
+            if "completed" in request.form:
+                task.completed = request.form.get("completed") == "1"
+            db.session.commit()
+            flash("Task updated.", "success")
+            return redirect(url_for("main.tasks"))
+
+    return render_template(
+        "edit_task.html",
+        task=task,
+        subjects=subjects,
+        today=today.isoformat(),
+    )
 
 
 @main_bp.route("/tasks/toggle/<int:task_id>", methods=["POST"])

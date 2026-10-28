@@ -111,7 +111,11 @@
             </div>
             <div class="metric-value">{{ open_task_count }} <span class="metric-unit">pending</span></div>
             <div class="metric-footnote">
+                {% if overdue_task_count and overdue_task_count > 0 %}
+                <a href="{{ url_for('main.tasks', overdue='1') }}" class="footnote-badge danger" title="{{ overdue_task_count }} overdue task(s)">⚠️ {{ overdue_task_count }} overdue</a>
+                {% else %}
                 <a href="{{ url_for('main.tasks') }}" class="metric-link">Manage tasks &rarr;</a>
+                {% endif %}
             </div>
         </div>
     </section>
@@ -514,10 +518,22 @@
                             </button>
                         </form>
                         <div class="task-info">
-                            <span class="task-title-text">{{ task.title }}</span>
-                            {% if task.subject %}
-                            <span class="task-subj-tag">{{ task.subject.name }}</span>
-                            {% endif %}
+                            <div class="task-title-line">
+                                <span class="task-title-text">{{ task.title }}</span>
+                                {% if task.priority == 'High' %}
+                                <span class="prio-tag prio-high" title="High Priority">High</span>
+                                {% elif task.priority == 'Low' %}
+                                <span class="prio-tag prio-low" title="Low Priority">Low</span>
+                                {% endif %}
+                            </div>
+                            <div class="task-meta-line">
+                                {% if task.subject %}
+                                <span class="task-subj-tag" style="--subj-dot: {{ task.subject.color or '#8E88A3' }};">{{ task.subject.name }}</span>
+                                {% endif %}
+                                {% if task.due_info and task.due_info.label %}
+                                <span class="task-due-badge {{ task.due_info.badge_class }}">{{ task.due_info.label }}</span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     {% else %}

@@ -49,6 +49,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     completed = db.Column(db.Boolean, default=False)
+    due_date = db.Column(db.Date, nullable=True)
+    priority = db.Column(db.String(20), default="Medium", nullable=False)
     created_at = db.Column(db.DateTime, default=utcnow)
     subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

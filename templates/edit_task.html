@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Edit Task · Study Tracker{% endblock %}
+
+{% block content %}
+<div class="panel page-panel">
+    <div class="section-header">
+        <div>
+            <h2>Edit Task</h2>
+            <p class="page-sub">Update task title, subject, priority, or due date.</p>
+        </div>
+    </div>
+
+    <form method="post" class="form-grid small-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <div class="field full">
+            <label for="f-title">Task title</label>
+            <input type="text" id="f-title" name="title" maxlength="120" value="{{ task.title }}" required autofocus />
+        </div>
+
+        <div class="field">
+            <label for="f-subject">Subject</label>
+            <select id="f-subject" name="subject_id">
+                <option value="">No subject (General)</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}" {% if task.subject_id == subject.id %}selected{% endif %}>{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="f-priority">Priority</label>
+            <select id="f-priority" name="priority">
+                <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                <option value="Medium" {% if task.priority == 'Medium' or not task.priority %}selected{% endif %}>Medium</option>
+                <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="f-due">Due date (optional)</label>
+            <input type="date" id="f-due" name="due_date" value="{{ task.due_date.strftime('%Y-%m-%d') if task.due_date else '' }}" />
+        </div>
+
+        <div class="field full">
+            <label class="checkbox-inline">
+                <input type="checkbox" name="completed" value="1" {% if task.completed %}checked{% endif %} />
+                <span>Mark task as completed</span>
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="primary">Save changes</button>
+            <a href="{{ url_for('main.tasks') }}" class="secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
