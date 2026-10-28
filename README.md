@@ -63,6 +63,7 @@ The **Study Tracker System** helps students:
 * 📅 Calendar View for sessions
 * 📈 Charts & Analytics
 * 👤 Profile page (read-only)
+* 🏠 Public landing page, plus subject management and session editing
 
 ---
 
@@ -91,6 +92,7 @@ study-tracker/
 │
 ├── templates/
 │   ├── base.html
+│   ├── landing.html
 │   ├── dashboard.html
 │   ├── login.html
 │   ├── register.html
@@ -99,10 +101,15 @@ study-tracker/
 │   ├── notes.html
 │   ├── calendar.html
 │   ├── profile.html
-│   └── sessions.html
+│   ├── sessions.html
+│   ├── edit_session.html
+│   ├── subjects.html
+│   └── error.html
 │
 ├── static/
-│   ├── css/style.css
+│   ├── css/
+│   │   ├── style.css      # app styles
+│   │   └── landing.css    # landing page styles
 │   └── js/
 │       ├── app.js
 │       ├── charts.js
@@ -152,7 +159,7 @@ All settings are optional environment variables:
 | --- | --- |
 | `SECRET_KEY` | Session signing key. If unset, a random key is generated once and stored in `instance/secret_key`. |
 | `FLASK_DEBUG=1` | Enable Flask debug mode (never in production). |
-| `STUDY_TRACKER_SEED_DEMO=1` | Create a demo account (`student@example.com` / `password`) with sample data when the database is empty. |
+| `STUDY_TRACKER_SEED_DEMO=1` | Create a demo account (`student@example.com` / `password`) with sample data when the database is empty. **Local demos only: never enable this, or keep a database containing this account, on a public deployment.** |
 | `DATABASE_URL` | Override the default SQLite database. |
 | `SESSION_COOKIE_SECURE=1` | Mark the session cookie HTTPS-only (set when served over HTTPS). |
 
@@ -163,15 +170,24 @@ http://127.0.0.1:5000
 ```
 
 
-## ✅ Testing Checklist
+## ✅ Manual Testing Checklist
 
-* ✔️ User registration & login works
-* ✔️ Dashboard displays correct data
-* ✔️ Tasks & goals management works
-* ✔️ Notes are saved properly
-* ✔️ Pomodoro timer functions correctly
-* ✔️ Charts show accurate analytics
-* ✔️ Calendar displays study sessions
+Walk through these after any change:
+
+* [ ] User registration & login works
+* [ ] Dashboard displays correct data
+* [ ] Tasks & goals management works
+* [ ] Notes are saved properly
+* [ ] Pomodoro timer functions correctly
+* [ ] Charts show accurate analytics
+* [ ] Calendar displays study sessions
+
+## ⚠️ Known Limitations
+
+* Times are stored and grouped in UTC (no per-user timezone yet), so sessions logged near midnight may land on a different day.
+* Tasks and notes can't be edited, and reminders have no UI to create or dismiss them.
+* The login throttle is in-memory (per process); use Redis/Flask-Limiter for multi-worker deployments.
+* No database migrations: schema changes need a fresh database.
 
 
 ## 🔮 Future Enhancements
@@ -186,4 +202,3 @@ http://127.0.0.1:5000
 ## 📌 Conclusion
 
 The **Study Tracker System** is a practical full-stack application that enhances student productivity by combining **task management, analytics, and time management tools** in one platform. It demonstrates effective integration of backend, frontend, and data visualization technologies.
-

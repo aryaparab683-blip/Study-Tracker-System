@@ -58,7 +58,7 @@
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const now = ctx.currentTime;
-            
+
             // Harmonious chime chords (D5, F#5, A5)
             const freqs = [587.33, 739.99, 880.00];
             freqs.forEach((freq, idx) => {
@@ -66,11 +66,11 @@
                 const gain = ctx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                
+
                 gain.gain.setValueAtTime(0.001, now + idx * 0.08);
                 gain.gain.exponentialRampToValueAtTime(0.25, now + idx * 0.08 + 0.05);
                 gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 1.2);
-                
+
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start(now + idx * 0.08);
@@ -150,7 +150,7 @@
         if (window.Notification && Notification.permission === 'granted') {
             const title = state.mode === 'focus' ? '🎯 Focus Session Complete!' : '⏰ Break Over!';
             const body = state.mode === 'focus' ? 'Great work! Take a 5-minute break.' : 'Time to dive back into deep focus.';
-            new Notification(title, { body, icon: '/static/favicon.ico' });
+            new Notification(title, { body });
         }
 
         // Advance phase automatically

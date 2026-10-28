@@ -12,21 +12,39 @@ from utils import EMAIL_RE, MIN_PASSWORD_LEN, safe_next_url
 auth_bp = Blueprint("auth", __name__, url_prefix="")
 
 # Simple in-memory brute-force throttle (per process). Use Redis/Flask-Limiter when deploying behind several workers.
-MAX_FAILURES = 5
+MAX_FAILURES = 5          # per (IP, email)
+MAX_FAILURES_PER_IP = 20  # per IP across all emails, so rotating emails can't bypass the limit
 WINDOW_SECONDS = 600
 _failures = defaultdict(deque)
 
 
-def _throttle_key(email):
-    return (request.remote_addr or "?", email)
+def _keys(email):
+    ip = request.remote_addr or "?"
+    return (ip, email), (ip, None)
 
 
-def _is_locked(key):
+def _prune(now):
+    """Drop expired attempts and empty entries so the dict can't grow without bound."""
+    for k in list(_failures):
+        attempts = _failures[k]
+        while attempts and now - attempts[0] > WINDOW_SECONDS:
+            attempts.popleft()
+        if not attempts:
+            del _failures[k]
+
+
+def _is_locked(email):
     now = time.time()
-    attempts = _failures[key]
-    while attempts and now - attempts[0] > WINDOW_SECONDS:
-        attempts.popleft()
-    return len(attempts) >= MAX_FAILURES
+    _prune(now)
+    pair_key, ip_key = _keys(email)
+    return (len(_failures.get(pair_key, ())) >= MAX_FAILURES
+            or len(_failures.get(ip_key, ())) >= MAX_FAILURES_PER_IP)
+
+
+def _record_failure(email):
+    now = time.time()
+    for key in _keys(email):
+        _failures[key].append(now)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -37,16 +55,15 @@ def login():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
         password = request.form.get("password") or ""
-        key = _throttle_key(email)
-        if _is_locked(key):
+        if _is_locked(email):
             flash("Too many failed attempts. Please wait a few minutes and try again.", "error")
         else:
             user = User.query.filter(func.lower(User.email) == email).first() if email else None
             if user and check_password_hash(user.password, password):
-                _failures.pop(key, None)
+                _failures.pop(_keys(email)[0], None)
                 login_user(user)
                 return redirect(safe_next_url(request.args.get("next")) or url_for("main.dashboard"))
-            _failures[key].append(time.time())
+            _record_failure(email)
             flash("Invalid email or password.", "error")
     return render_template("login.html", email=email)
 

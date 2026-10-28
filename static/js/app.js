@@ -13,7 +13,7 @@ function updateTheme(mode) {
     const dark = mode === 'dark';
     document.body.classList.toggle('dark-mode', dark);
     document.body.classList.toggle('light-mode', !dark);
-    
+
     // Update theme toggle buttons
     document.querySelectorAll('#themeToggle, .theme-toggle-btn').forEach(btn => {
         btn.setAttribute('aria-pressed', String(dark));
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. Auto-dismiss Flash Alerts ---
     setTimeout(() => {
-        document.querySelectorAll('.flash-alert').forEach(alert => {
+        document.querySelectorAll('.flash-alert:not(.error)').forEach(alert => {
             alert.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
             alert.style.opacity = '0';
             alert.style.transform = 'translateY(-6px)';
@@ -140,7 +140,7 @@ window.togglePasswordVisibility = function (inputId, btn) {
     if (!input) return;
     const isPassword = input.type === 'password';
     input.type = isPassword ? 'text' : 'password';
-    
+
     // Toggle icon state
     if (btn) {
         btn.classList.toggle('active', isPassword);

@@ -41,6 +41,7 @@ def create_app():
     app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE") == "1"
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024  # reject request bodies over 1 MB
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -53,6 +54,13 @@ def create_app():
     app.register_blueprint(main_bp)
 
     register_error_handlers(app)
+
+    @app.after_request
+    def _security_headers(resp):
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        return resp
 
     with app.app_context():
         db.create_all()
@@ -74,6 +82,10 @@ def register_error_handlers(app):
     @app.errorhandler(404)
     def not_found(e):
         return render_error(404, "Page not found", "That page doesn't exist, or it isn't yours to see.")
+
+    @app.errorhandler(413)
+    def too_large(e):
+        return render_error(413, "Request too large", "That submission is too large. Please shorten it and try again.")
 
     @app.errorhandler(405)
     def not_allowed(e):
@@ -138,10 +150,10 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     # Debug mode exposes the Werkzeug debugger: opt in explicitly with FLASK_DEBUG=1.
     try:
-        app.run(debug=os.environ.get("FLASK_DEBUG", "1") == "1", port=port)
+        app.run(debug=os.environ.get("FLASK_DEBUG") == "1", port=port)
     except OSError as e:
         if port == 5000 and getattr(e, "errno", None) == 48:
             print("Port 5000 is already in use (often by macOS AirPlay). Falling back to port 5001...")
-            app.run(debug=os.environ.get("FLASK_DEBUG", "1") == "1", port=5001)
+            app.run(debug=os.environ.get("FLASK_DEBUG") == "1", port=5001)
         else:
             raise
