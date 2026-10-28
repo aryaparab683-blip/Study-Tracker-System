@@ -137,4 +137,11 @@ if __name__ == "__main__":
     app = create_app()
     port = int(os.environ.get("PORT", 5000))
     # Debug mode exposes the Werkzeug debugger: opt in explicitly with FLASK_DEBUG=1.
-    app.run(debug=os.environ.get("FLASK_DEBUG") == "1", port=port)
+    try:
+        app.run(debug=os.environ.get("FLASK_DEBUG", "1") == "1", port=port)
+    except OSError as e:
+        if port == 5000 and getattr(e, "errno", None) == 48:
+            print("Port 5000 is already in use (often by macOS AirPlay). Falling back to port 5001...")
+            app.run(debug=os.environ.get("FLASK_DEBUG", "1") == "1", port=5001)
+        else:
+            raise
