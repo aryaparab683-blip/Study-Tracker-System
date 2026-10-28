@@ -1,5 +1,3 @@
-Claude
-Main1 · PY
 from datetime import datetime, time, timedelta
  
 from flask import Blueprint, render_template, redirect, url_for, flash, request
