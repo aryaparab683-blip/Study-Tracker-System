@@ -1,6 +1,7 @@
+import re
 from datetime import datetime, time, timedelta
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -246,6 +247,97 @@ def delete_session(session_id):
     db.session.commit()
     flash("Study session deleted.", "success")
     return redirect(url_for("main.sessions"))
+
+
+@main_bp.route("/api/pomodoro/log", methods=["POST"])
+@login_required
+def log_pomodoro():
+    # 1. Validate idempotency token
+    token = (request.form.get("token") or "").strip()
+    if not token or len(token) > 64 or not re.match(r"^[A-Za-z0-9_-]+$", token):
+        return jsonify({"error": "Invalid or missing session token."}), 400
+
+    # 2. Check for duplicate submission using the token
+    token_tag = f"[token:{token}]"
+    existing = StudySession.query.filter(
+        StudySession.user_id == current_user.id,
+        StudySession.notes.like(f"%{token_tag}%"),
+    ).first()
+    if existing:
+        return jsonify({
+            "status": "already_logged",
+            "message": "Session was already recorded.",
+            "session": {
+                "id": existing.id,
+                "title": existing.title,
+                "duration": existing.duration,
+            },
+        }), 200
+
+    # 3. Validate duration (bounded to reasonable focus block: 1 to 180 minutes)
+    duration, dur_err = form_int("duration", "Duration", 1, 180)
+    if dur_err:
+        return jsonify({"error": dur_err}), 400
+
+    # 4. Validate subject ownership
+    subject_id, subj_err = owned_subject_id()
+    if subj_err:
+        return jsonify({"error": subj_err}), 400
+
+    # 5. Determine title
+    title = (request.form.get("title") or "").strip()
+    subject_obj = None
+    if subject_id:
+        subject_obj = db.session.get(Subject, subject_id)
+    if not title:
+        title = f"Focus: {subject_obj.name}" if subject_obj else "Focus Session"
+    if len(title) > 120:
+        title = title[:120]
+
+    # 6. Create StudySession record
+    notes = f"Pomodoro focus session. {token_tag}"
+    new_session = StudySession(
+        title=title,
+        duration=duration,
+        notes=notes,
+        subject_id=subject_id,
+        created_at=utcnow(),
+        user_id=current_user.id,
+    )
+    db.session.add(new_session)
+    db.session.commit()
+
+    # 7. Compute updated stats for live UI update without full reload
+    uid = current_user.id
+    today = local_today()
+    sunday = today - timedelta(days=(today.weekday() + 1) % 7)
+    week_minutes = (
+        db.session.query(func.coalesce(func.sum(StudySession.duration), 0))
+        .filter(StudySession.user_id == uid, StudySession.created_at >= local_day_start_utc(sunday))
+        .scalar()
+    )
+    total_sessions = StudySession.query.filter_by(user_id=uid).count()
+    total_time = db.session.query(func.coalesce(func.sum(StudySession.duration), 0)).filter(StudySession.user_id == uid).scalar()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Recorded {duration}m focus session!",
+        "session": {
+            "id": new_session.id,
+            "title": new_session.title,
+            "duration": new_session.duration,
+            "subject_name": subject_obj.name if subject_obj else "General",
+            "subject_color": subject_obj.color if subject_obj else "#A89F91",
+            "date": to_local(new_session.created_at).strftime("%b %d"),
+        },
+        "stats": {
+            "week_minutes": week_minutes,
+            "week_hours": round(week_minutes / 60, 1),
+            "total_sessions": total_sessions,
+            "total_hours": round(total_time / 60, 1) if total_time else 0,
+            "streak": compute_streak(uid),
+        },
+    }), 201
 
 
 # ------------------------------------------------------------------- subjects

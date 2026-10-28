@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from flask import abort, request, session
+from flask import abort, has_request_context, request, session
 from flask_login import current_user
 
 from models import Subject, StudySession
@@ -25,6 +25,8 @@ TZ_RE = re.compile(r"^[A-Za-z0-9_+/-]{1,64}$")
 
 
 def _tz_from_cookie():
+    if not has_request_context():
+        return None
     name = request.cookies.get("tz", "")
     if TZ_RE.match(name):
         try:
@@ -74,7 +76,11 @@ def init_csrf(app):
     def _check_csrf():
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             expected = session.get("_csrf")
-            sent = request.form.get("csrf_token") or request.headers.get("X-CSRFToken")
+            sent = (
+                request.form.get("csrf_token")
+                or request.headers.get("X-CSRFToken")
+                or request.headers.get("X-CSRF-Token")
+            )
             if not expected or not sent or not secrets.compare_digest(expected, sent):
                 abort(400, description="Your form expired or was invalid. Please go back, refresh the page and try again.")
 

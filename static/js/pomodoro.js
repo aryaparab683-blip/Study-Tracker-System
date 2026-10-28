@@ -1,4 +1,4 @@
-// Pomodoro Focus Timer with SVG Ring Animation & Audio Chime
+// Pomodoro Focus Timer with SVG Ring Animation, Audio Chime & Backend Persistence
 // State lives in localStorage with absolute end timestamp for background tab navigation.
 (function () {
     const KEY = 'study-tracker-pomodoro-v2';
@@ -18,6 +18,8 @@
     const ringProgress = document.getElementById('timerRingProgress');
     const sidebarText = document.getElementById('sidebarTimerText');
     const sidebarBadge = document.getElementById('sidebarTimerBadge');
+    const subjectSelect = document.getElementById('timerSubject');
+    const feedbackEl = document.getElementById('timerFeedback');
 
     const modePills = {
         focus: document.getElementById('modeFocus'),
@@ -27,6 +29,19 @@
 
     const baseTitle = document.title;
     let state = load();
+    let isSaving = false;
+    let feedbackTimer = null;
+
+    // Sync subject select with saved state if available
+    if (subjectSelect && state.subjectId) {
+        subjectSelect.value = state.subjectId;
+    }
+    if (subjectSelect) {
+        subjectSelect.addEventListener('change', () => {
+            state.subjectId = subjectSelect.value;
+            save();
+        });
+    }
 
     function fresh(modeKey = 'focus') {
         const mode = MODES[modeKey] ? modeKey : 'focus';
@@ -37,6 +52,8 @@
             total: MODES[mode].duration,
             endsAt: 0,
             cycle: 1,
+            token: null,
+            subjectId: subjectSelect ? subjectSelect.value : '',
         };
     }
 
@@ -96,7 +113,6 @@
         if (!ringProgress) return;
         const total = state.total || MODES[state.mode].duration;
         const progress = Math.max(0, Math.min(1, left / total));
-        // Stroke dashoffset: 0 is full circle, CIRCUMFERENCE is empty
         const offset = CIRCUMFERENCE * (1 - progress);
         ringProgress.style.strokeDashoffset = offset;
     }
@@ -145,6 +161,139 @@
         }
     }
 
+    function showFeedback(msg, type = 'info', options = {}) {
+        if (!feedbackEl) return;
+        if (feedbackTimer) clearTimeout(feedbackTimer);
+
+        feedbackEl.className = `timer-feedback-pill ${type}`;
+        feedbackEl.hidden = false;
+        feedbackEl.innerHTML = '';
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = msg;
+        feedbackEl.appendChild(textSpan);
+
+        if (options.retry) {
+            const retryBtn = document.createElement('button');
+            retryBtn.type = 'button';
+            retryBtn.className = 'btn-retry';
+            retryBtn.textContent = 'Retry';
+            retryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                options.retry();
+            });
+            feedbackEl.appendChild(retryBtn);
+        } else if (type === 'success') {
+            feedbackTimer = setTimeout(() => {
+                hideFeedback();
+            }, 6000);
+        }
+    }
+
+    function hideFeedback() {
+        if (!feedbackEl) return;
+        feedbackEl.hidden = true;
+        feedbackEl.innerHTML = '';
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function updateDashboardUI(data) {
+        if (!data || !data.stats) return;
+
+        const weekMin = document.getElementById('metricWeekMinutes');
+        if (weekMin) weekMin.innerHTML = `${data.stats.week_minutes} <span class="metric-unit">min</span>`;
+
+        const weekHrs = document.getElementById('metricWeekHours');
+        if (weekHrs) weekHrs.textContent = `${data.stats.week_hours} hrs`;
+
+        const streak = document.getElementById('metricStreak');
+        if (streak) streak.innerHTML = `${data.stats.streak} <span class="metric-unit">day${data.stats.streak === 1 ? '' : 's'}</span>`;
+
+        const totalSessions = document.getElementById('metricTotalSessions');
+        if (totalSessions) totalSessions.innerHTML = `${data.stats.total_sessions} <span class="metric-unit">sessions</span>`;
+
+        const totalHrs = document.getElementById('metricTotalHours');
+        if (totalHrs) totalHrs.textContent = `${data.stats.total_hours} hrs`;
+
+        const sessionList = document.getElementById('dashSessionList');
+        if (sessionList && data.session) {
+            const emptyBox = sessionList.querySelector('.empty-box');
+            if (emptyBox) emptyBox.remove();
+
+            const item = document.createElement('div');
+            item.className = 'dash-session-item';
+            item.innerHTML = `
+                <div class="session-main">
+                    <strong class="session-title">${escapeHtml(data.session.title)}</strong>
+                    <div class="session-meta">
+                        <span class="subject-pill" style="--dot: ${escapeHtml(data.session.subject_color)};">${escapeHtml(data.session.subject_name)}</span>
+                        <span class="session-date">${escapeHtml(data.session.date)}</span>
+                    </div>
+                </div>
+                <div class="session-duration-badge">${Number(data.session.duration)}m</div>
+            `;
+            sessionList.prepend(item);
+        }
+    }
+
+    function saveFocusSession(token, duration, subjectId) {
+        if (isSaving) return;
+        isSaving = true;
+
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+        const formData = new URLSearchParams();
+        formData.append('token', token);
+        formData.append('duration', duration);
+        if (subjectId) {
+            formData.append('subject_id', subjectId);
+        }
+        if (csrfToken) {
+            formData.append('csrf_token', csrfToken);
+        }
+
+        showFeedback('Saving focus session to your study log...', 'info');
+
+        fetch('/api/pomodoro/log', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken,
+            },
+            body: formData.toString(),
+        })
+        .then(res => {
+            isSaving = false;
+            return res.json().then(data => {
+                if (!res.ok) {
+                    throw new Error(data.error || 'Server error');
+                }
+                return data;
+            });
+        })
+        .then(data => {
+            if (data.status === 'already_logged') {
+                showFeedback('Focus session already recorded.', 'info');
+            } else {
+                showFeedback(`🎯 Focus session recorded (${duration} min)!`, 'success');
+                updateDashboardUI(data);
+            }
+        })
+        .catch(err => {
+            isSaving = false;
+            showFeedback(`⚠️ Could not save focus session (${err.message}).`, 'error', {
+                retry: () => saveFocusSession(token, duration, subjectId)
+            });
+        });
+    }
+
     function onComplete() {
         playChime();
         if (window.Notification && Notification.permission === 'granted') {
@@ -152,6 +301,11 @@
             const body = state.mode === 'focus' ? 'Great work! Take a 5-minute break.' : 'Time to dive back into deep focus.';
             new Notification(title, { body });
         }
+
+        const wasFocus = state.mode === 'focus';
+        const completedToken = state.token;
+        const completedDuration = Math.round((state.total || 1500) / 60);
+        const completedSubjectId = state.subjectId || (subjectSelect ? subjectSelect.value : '');
 
         // Advance phase automatically
         if (state.mode === 'focus') {
@@ -167,8 +321,14 @@
         }
         state.running = false;
         state.endsAt = 0;
+        state.token = null;
         save();
         render();
+
+        // Persist to backend if it was a focus session
+        if (wasFocus && completedToken) {
+            saveFocusSession(completedToken, completedDuration, completedSubjectId);
+        }
     }
 
     function tick() {
@@ -186,10 +346,17 @@
         if (window.Notification && Notification.permission === 'default') {
             Notification.requestPermission();
         }
+        if (state.mode === 'focus' && !state.token) {
+            state.token = 'pomo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        }
+        if (subjectSelect) {
+            state.subjectId = subjectSelect.value || '';
+        }
         state.endsAt = Date.now() + state.remaining * 1000;
         state.running = true;
         save();
         render();
+        hideFeedback();
     }
 
     function pause() {
@@ -205,6 +372,7 @@
         state = fresh(state.mode);
         save();
         render();
+        hideFeedback();
     }
 
     function setMode(modeKey) {
@@ -214,8 +382,10 @@
         state.remaining = state.total;
         state.running = false;
         state.endsAt = 0;
+        state.token = null;
         save();
         render();
+        hideFeedback();
     }
 
     // Attach Event Listeners

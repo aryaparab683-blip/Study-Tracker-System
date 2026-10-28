@@ -34,9 +34,9 @@
                     </svg>
                 </div>
             </div>
-            <div class="metric-value">{{ week_minutes }} <span class="metric-unit">min</span></div>
+            <div class="metric-value" id="metricWeekMinutes">{{ week_minutes }} <span class="metric-unit">min</span></div>
             <div class="metric-footnote">
-                <span class="footnote-highlight">{{ (week_minutes / 60)|round(1) }} hrs</span> tracked since Sunday
+                <span class="footnote-highlight" id="metricWeekHours">{{ (week_minutes / 60)|round(1) }} hrs</span> tracked since Sunday
             </div>
         </div>
 
@@ -50,7 +50,7 @@
                     </svg>
                 </div>
             </div>
-            <div class="metric-value">{{ streak }} <span class="metric-unit">day{{ '' if streak == 1 else 's' }}</span>
+            <div class="metric-value" id="metricStreak">{{ streak }} <span class="metric-unit">day{{ '' if streak == 1 else 's' }}</span>
             </div>
             <div class="metric-footnote">
                 {% if streak > 0 %}
@@ -72,9 +72,9 @@
                     </svg>
                 </div>
             </div>
-            <div class="metric-value">{{ total_sessions }} <span class="metric-unit">sessions</span></div>
+            <div class="metric-value" id="metricTotalSessions">{{ total_sessions }} <span class="metric-unit">sessions</span></div>
             <div class="metric-footnote">
-                <span class="footnote-highlight">{{ (total_time / 60)|round(1) if total_time else 0 }} hrs</span> total
+                <span class="footnote-highlight" id="metricTotalHours">{{ (total_time / 60)|round(1) if total_time else 0 }} hrs</span> total
                 focus time
             </div>
         </div>
@@ -127,6 +127,17 @@
                     15m</button>
             </div>
 
+            <!-- Optional Subject Association -->
+            <div class="timer-subject-bar">
+                <label for="timerSubject" class="timer-subject-label">Subject:</label>
+                <select id="timerSubject" class="timer-subject-select" aria-label="Tag focus session with a subject">
+                    <option value="">General (No subject)</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <!-- SVG Ring and Countdown -->
             <div class="timer-ring-container">
                 <svg class="timer-ring-svg" viewBox="0 0 220 220" width="220" height="220">
@@ -165,6 +176,7 @@
                     <span>Reset</span>
                 </button>
             </div>
+            <div id="timerFeedback" class="timer-feedback-pill" role="status" aria-live="polite" hidden></div>
             <p class="timer-footer-note">Runs in background across navigation. Synthesized audio chime on finish.</p>
         </div>
 
@@ -395,15 +407,14 @@
                     <a href="{{ url_for('main.sessions') }}" class="card-action-link">All sessions</a>
                 </div>
 
-                <div class="dash-session-list">
+                <div class="dash-session-list" id="dashSessionList">
                     {% for session in sessions %}
                     <div class="dash-session-item">
                         <div class="session-main">
                             <strong class="session-title">{{ session.title }}</strong>
                             <div class="session-meta">
                                 {% if session.subject %}
-                                <span class="subject-pill" style="--dot: {{ session.subject.color }};">{{
-                                    session.subject.name }}</span>
+                                <span class="subject-pill" style="--dot: {{ session.subject.color }};">{{ session.subject.name }}</span>
                                 {% else %}
                                 <span class="subject-pill default-pill">General</span>
                                 {% endif %}

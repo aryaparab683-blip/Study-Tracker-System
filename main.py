@@ -3,6 +3,8 @@ import secrets
 
 from flask import Flask, flash, redirect, render_template, url_for
 from flask_login import LoginManager
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from werkzeug.security import generate_password_hash
 
 from models import db, User, Subject, StudySession, Task, Note, Goal, Reminder
@@ -31,6 +33,15 @@ def _load_secret_key(app):
     except OSError:
         pass
     return key
+
+
+@event.listens_for(Engine, "connect")
+def _set_sqlite_pragma(dbapi_connection, connection_record):
+    """Enforce SQLite foreign key constraints on every connection."""
+    if type(dbapi_connection).__module__.startswith("sqlite3"):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
 
 
 def create_app():
