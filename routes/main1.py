@@ -38,6 +38,171 @@ def parse_session_datetime(existing=None):
 
 
 # ------------------------------------------------------------------ landing & dashboard
+def get_week_comparison(uid, sunday, week_minutes):
+    """Calculates study time comparison between current week (Sunday-now) and previous week."""
+    last_week_start = sunday - timedelta(days=7)
+    last_week_end = sunday
+    last_week_minutes = (
+        db.session.query(func.coalesce(func.sum(StudySession.duration), 0))
+        .filter(
+            StudySession.user_id == uid,
+            StudySession.created_at >= local_day_start_utc(last_week_start),
+            StudySession.created_at < local_day_start_utc(last_week_end),
+        )
+        .scalar()
+    ) or 0
+    week_minutes = week_minutes or 0
+
+    diff_minutes = week_minutes - last_week_minutes
+    if last_week_minutes > 0:
+        pct_change = round((diff_minutes / last_week_minutes) * 100)
+    else:
+        pct_change = 100 if week_minutes > 0 else 0
+
+    return {
+        "this_week_minutes": week_minutes,
+        "this_week_hours": round(week_minutes / 60, 1),
+        "last_week_minutes": last_week_minutes,
+        "last_week_hours": round(last_week_minutes / 60, 1),
+        "diff_minutes": diff_minutes,
+        "diff_hours": round(abs(diff_minutes) / 60, 1),
+        "pct_change": pct_change,
+        "trend": "up" if diff_minutes > 0 else ("down" if diff_minutes < 0 else "same"),
+        "has_last_week": last_week_minutes > 0,
+    }
+
+
+def compute_dashboard_insights(uid, sunday, week_minutes, seven_days, subjects):
+    """Derives honest, transparent, data-driven study habit insights strictly from user's sessions."""
+    insights = []
+
+    # 1. Top Focus Subject (This week if available, else all-time)
+    this_week_subj = (
+        db.session.query(StudySession.subject_id, func.sum(StudySession.duration))
+        .filter(StudySession.user_id == uid, StudySession.created_at >= local_day_start_utc(sunday))
+        .group_by(StudySession.subject_id)
+        .order_by(func.sum(StudySession.duration).desc())
+        .first()
+    )
+
+    subj_map = {s.id: s.name for s in subjects}
+    if this_week_subj and (this_week_subj[1] or 0) > 0:
+        sid, mins = this_week_subj
+        sname = subj_map.get(sid, "General")
+        pct = round((mins / week_minutes) * 100) if week_minutes > 0 else 100
+        insights.append({
+            "icon": "📚",
+            "title": "Top Focus Subject",
+            "text": f"{sname} is your most studied subject this week ({mins}m, {pct}% of weekly study time).",
+        })
+    else:
+        # Check all-time top subject
+        all_time_subj = (
+            db.session.query(StudySession.subject_id, func.sum(StudySession.duration))
+            .filter(StudySession.user_id == uid)
+            .group_by(StudySession.subject_id)
+            .order_by(func.sum(StudySession.duration).desc())
+            .first()
+        )
+        if all_time_subj and (all_time_subj[1] or 0) > 0:
+            sid, mins = all_time_subj
+            sname = subj_map.get(sid, "General")
+            insights.append({
+                "icon": "📚",
+                "title": "Top Focus Subject",
+                "text": f"{sname} is your all-time top focus subject ({mins}m logged across your sessions).",
+            })
+        else:
+            insights.append({
+                "icon": "📚",
+                "title": "Top Focus Subject",
+                "text": "Log your first study session to reveal your subject distribution patterns.",
+            })
+
+    # 2. Observed Study Window / Time-of-Day Pattern
+    all_sessions = (
+        StudySession.query.with_entities(StudySession.created_at, StudySession.duration)
+        .filter_by(user_id=uid)
+        .all()
+    )
+    valid_sessions = [s for s in all_sessions if s[0] and (s[1] or 0) > 0]
+    if len(valid_sessions) >= 2:
+        slots = {
+            "Morning (5 AM – 12 PM)": 0,
+            "Afternoon (12 PM – 5 PM)": 0,
+            "Evening (5 PM – 10 PM)": 0,
+            "Night (10 PM – 5 AM)": 0,
+        }
+        total_focus = 0
+        for created_at, duration in valid_sessions:
+            dur = duration or 0
+            try:
+                h = to_local(created_at).hour
+            except Exception:
+                continue
+            total_focus += dur
+            if 5 <= h < 12:
+                slots["Morning (5 AM – 12 PM)"] += dur
+            elif 12 <= h < 17:
+                slots["Afternoon (12 PM – 5 PM)"] += dur
+            elif 17 <= h < 22:
+                slots["Evening (5 PM – 10 PM)"] += dur
+            else:
+                slots["Night (10 PM – 5 AM)"] += dur
+
+        best_slot, best_dur = max(slots.items(), key=lambda item: item[1])
+        if total_focus > 0 and best_dur > 0:
+            pct = round((best_dur / total_focus) * 100)
+            insights.append({
+                "icon": "⏰",
+                "title": "Primary Focus Window",
+                "text": f"Observed pattern: {pct}% of your recorded study time is logged in the {best_slot}.",
+            })
+        else:
+            insights.append({
+                "icon": "⏰",
+                "title": "Primary Focus Window",
+                "text": "Complete a few focus sessions to observe your typical study-hour patterns.",
+            })
+    else:
+        insights.append({
+            "icon": "⏰",
+            "title": "Primary Focus Window",
+            "text": "Complete at least 2 sessions to observe your typical study-hour patterns.",
+        })
+
+    # 3. Weekly Consistency & Pace
+    active_days = sum(1 for d in seven_days if d["minutes"] > 0)
+    seven_day_total = sum(d["minutes"] for d in seven_days)
+    if active_days >= 5:
+        insights.append({
+            "icon": "🔥",
+            "title": "Weekly Study Rhythm",
+            "text": f"High consistency! Active on {active_days} of the past 7 days ({seven_day_total}m total). Great momentum!",
+        })
+    elif active_days >= 2:
+        avg_active = round(seven_day_total / active_days)
+        insights.append({
+            "icon": "⚡",
+            "title": "Weekly Study Rhythm",
+            "text": f"Steady progress: Active on {active_days} of the past 7 days, averaging {avg_active}m per active day.",
+        })
+    elif active_days == 1:
+        insights.append({
+            "icon": "🌱",
+            "title": "Weekly Study Rhythm",
+            "text": "You logged 1 active day in the past week. Start a 25m focus timer today to build momentum!",
+        })
+    else:
+        insights.append({
+            "icon": "💡",
+            "title": "Weekly Study Rhythm",
+            "text": "No sessions logged in the last 7 days. Start with a short Pomodoro session today!",
+        })
+
+    return insights
+
+
 @main_bp.route("/")
 def index():
     if not current_user.is_authenticated:
@@ -164,6 +329,9 @@ def dashboard_view():
             cursor += timedelta(days=1)
         heatmap_weeks.append(week)
 
+    week_comparison = get_week_comparison(uid, sunday, week_minutes)
+    dashboard_insights = compute_dashboard_insights(uid, sunday, week_minutes, seven_days, subjects)
+
     return render_template(
         "dashboard.html",
         subjects=subjects,
@@ -174,6 +342,8 @@ def dashboard_view():
         total_sessions=total_sessions,
         total_time=total_time,
         week_minutes=week_minutes,
+        week_comparison=week_comparison,
+        dashboard_insights=dashboard_insights,
         open_tasks=open_tasks,
         open_task_count=open_task_count,
         streak=compute_streak(uid),
@@ -318,6 +488,7 @@ def log_pomodoro():
     )
     total_sessions = StudySession.query.filter_by(user_id=uid).count()
     total_time = db.session.query(func.coalesce(func.sum(StudySession.duration), 0)).filter(StudySession.user_id == uid).scalar()
+    week_comp = get_week_comparison(uid, sunday, week_minutes)
 
     return jsonify({
         "status": "success",
@@ -333,6 +504,10 @@ def log_pomodoro():
         "stats": {
             "week_minutes": week_minutes,
             "week_hours": round(week_minutes / 60, 1),
+            "last_week_minutes": week_comp["last_week_minutes"],
+            "week_diff_minutes": week_comp["diff_minutes"],
+            "week_diff_hours": week_comp["diff_hours"],
+            "week_trend": week_comp["trend"],
             "total_sessions": total_sessions,
             "total_hours": round(total_time / 60, 1) if total_time else 0,
             "streak": compute_streak(uid),

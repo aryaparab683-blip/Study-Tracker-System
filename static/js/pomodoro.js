@@ -212,6 +212,28 @@
         const weekHrs = document.getElementById('metricWeekHours');
         if (weekHrs) weekHrs.textContent = `${data.stats.week_hours} hrs`;
 
+        const footnote = document.getElementById('metricWeekFootnote');
+        if (footnote && data.stats.last_week_minutes !== undefined) {
+            const lastMins = data.stats.last_week_minutes;
+            const diffMins = data.stats.week_diff_minutes;
+            const diffHrs = data.stats.week_diff_hours !== undefined ? data.stats.week_diff_hours : (Math.abs(diffMins) / 60).toFixed(1);
+            let badgeHtml = '';
+            if (lastMins > 0) {
+                if (diffMins > 0) {
+                    badgeHtml = `<span class="trend-badge trend-up" title="${diffMins} min more than last week">&uarr; +${diffHrs}h vs last week</span>`;
+                } else if (diffMins < 0) {
+                    badgeHtml = `<span class="trend-badge trend-down" title="${Math.abs(diffMins)} min less than last week">&darr; -${diffHrs}h vs last week</span>`;
+                } else {
+                    badgeHtml = `<span class="trend-badge trend-same" title="Same focus time as last week">= same as last week</span>`;
+                }
+            } else if (data.stats.week_minutes > 0) {
+                badgeHtml = `<span class="trend-badge trend-new">First active week</span>`;
+            } else {
+                badgeHtml = `<span class="footnote-muted">tracked since Sunday</span>`;
+            }
+            footnote.innerHTML = `<span class="footnote-highlight" id="metricWeekHours">${data.stats.week_hours} hrs</span> this week ${badgeHtml}`;
+        }
+
         const streak = document.getElementById('metricStreak');
         if (streak) streak.innerHTML = `${data.stats.streak} <span class="metric-unit">day${data.stats.streak === 1 ? '' : 's'}</span>`;
 

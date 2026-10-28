@@ -401,6 +401,135 @@ h3,
     padding: 0 4px;
 }
 
+/* ---- Dashboard Study Insights Strip ---- */
+.insights-card {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.insights-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 12px;
+}
+
+.insights-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.insights-badge-icon {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.insights-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.insights-pill-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--radius-full);
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.insight-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.insight-icon-box {
+    font-size: 1.4rem;
+    line-height: 1;
+    padding: 8px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.insight-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.insight-item-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 3px;
+}
+
+.insight-item-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Trend Badges inside Metric Cards */
+.trend-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.trend-badge.trend-up {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.trend-badge.trend-down {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.trend-badge.trend-same {
+    background-color: var(--surface-subtle);
+    color: var(--text-muted);
+}
+
+.trend-badge.trend-new {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         animation: none !important;

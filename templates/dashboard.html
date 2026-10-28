@@ -35,8 +35,27 @@
                 </div>
             </div>
             <div class="metric-value" id="metricWeekMinutes">{{ week_minutes }} <span class="metric-unit">min</span></div>
-            <div class="metric-footnote">
-                <span class="footnote-highlight" id="metricWeekHours">{{ (week_minutes / 60)|round(1) }} hrs</span> tracked since Sunday
+            <div class="metric-footnote" id="metricWeekFootnote">
+                <span class="footnote-highlight" id="metricWeekHours">{{ (week_minutes / 60)|round(1) }} hrs</span> this week
+                {% if week_comparison.has_last_week %}
+                    {% if week_comparison.trend == 'up' %}
+                    <span class="trend-badge trend-up" title="{{ week_comparison.diff_minutes }} min more than last week">
+                        &uarr; +{{ week_comparison.diff_hours }}h vs last week
+                    </span>
+                    {% elif week_comparison.trend == 'down' %}
+                    <span class="trend-badge trend-down" title="{{ week_comparison.diff_minutes|abs }} min less than last week">
+                        &darr; -{{ week_comparison.diff_hours }}h vs last week
+                    </span>
+                    {% else %}
+                    <span class="trend-badge trend-same" title="Same focus time as last week">
+                        = same as last week
+                    </span>
+                    {% endif %}
+                {% elif week_comparison.this_week_minutes > 0 %}
+                <span class="trend-badge trend-new">First active week</span>
+                {% else %}
+                <span class="footnote-muted">tracked since Sunday</span>
+                {% endif %}
             </div>
         </div>
 
@@ -94,6 +113,37 @@
             <div class="metric-footnote">
                 <a href="{{ url_for('main.tasks') }}" class="metric-link">Manage tasks &rarr;</a>
             </div>
+        </div>
+    </section>
+
+    <!-- Study Insights & Habits -->
+    <section class="card insights-card" aria-label="Study Intelligence and Habits">
+        <div class="insights-header">
+            <div class="insights-title-group">
+                <div class="card-badge-icon insights-badge-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="insights-title">Study Intelligence &amp; Habits</h3>
+                    <p class="card-subtitle">Real-time habit patterns derived from your recorded focus sessions</p>
+                </div>
+            </div>
+            <span class="insights-pill-tag">Data-Driven</span>
+        </div>
+
+        <div class="insights-grid">
+            {% for item in dashboard_insights %}
+            <div class="insight-item">
+                <div class="insight-icon-box" aria-hidden="true">{{ item.icon }}</div>
+                <div class="insight-body">
+                    <div class="insight-item-title">{{ item.title }}</div>
+                    <p class="insight-item-text">{{ item.text }}</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </section>
 
