@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Study Tracker{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+</head>
+<body class="cozy-landing-body auth-body">
+    <a class="auth-skip" href="#main-content">Skip to content</a>
+
+    <header class="cozy-navbar" role="banner">
+        <div class="cozy-nav-inner">
+            <a href="{{ url_for('main.landing') }}" class="cozy-brand" aria-label="StudyTracker home">
+                <div class="cozy-brand-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                        <path d="M6 6h10"/><path d="M6 10h10"/><path d="M6 14h6"/>
+                    </svg>
+                </div>
+                <span>StudyTracker</span>
+            </a>
+            <div class="cozy-nav-actions">
+                {% block nav_action %}{% endblock %}
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="auth-shell">
+        <section class="auth-aside" aria-label="Welcome">
+            <div class="mascot-stage" aria-hidden="true">
+                <div class="mascot-bubble"><span>{% block bubble %}Ready to focus today? ✨{% endblock %}</span></div>
+                <div class="mascot-figure-wrapper">
+                    <div class="mascot-heart-particle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#C496A1"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                    <svg class="mascot-svg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M80 32C76 20 64 22 64 22C64 22 66 34 78 35" stroke="#919D85" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="#EDF1EB"/>
+                        <path d="M80 32C84 20 96 22 96 22C96 22 94 34 82 35" stroke="#919D85" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="#919D85"/>
+                        <path d="M80 36C45 36 32 60 32 94C32 126 50 144 80 144C110 144 128 126 128 94C128 60 115 36 80 36Z" fill="#8E88A3"/>
+                        <path d="M48 110C56 130 68 138 80 138C92 138 104 130 112 110C98 116 62 116 48 110Z" fill="#7D7694" opacity="0.35"/>
+                        <circle cx="54" cy="94" r="7" fill="#C496A1" opacity="0.85"/>
+                        <circle cx="106" cy="94" r="7" fill="#C496A1" opacity="0.85"/>
+                        <g class="mascot-eye">
+                            <ellipse cx="62" cy="84" rx="4.5" ry="6" fill="#2D282E"/><circle cx="60.5" cy="82" r="1.8" fill="#FFFFFF"/>
+                            <ellipse cx="98" cy="84" rx="4.5" ry="6" fill="#2D282E"/><circle cx="96.5" cy="82" r="1.8" fill="#FFFFFF"/>
+                        </g>
+                        <path d="M74 94C77 98 83 98 86 94" stroke="#2D282E" stroke-width="2.5" stroke-linecap="round"/>
+                        <rect x="114" y="90" width="8" height="24" rx="2" transform="rotate(25 114 90)" fill="#EBE1C6" stroke="#2D282E" stroke-width="1.5"/>
+                        <polygon points="124,112 120,119 117,114" fill="#C496A1" stroke="#2D282E" stroke-width="1.2"/>
+                        <path d="M112 98C118 96 122 100 120 106" stroke="#8E88A3" stroke-width="6" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="mascot-shadow"></div>
+            </div>
+            <h1 class="auth-aside-title">{% block aside_title %}{% endblock %}</h1>
+            <p class="auth-aside-text">{% block aside_text %}{% endblock %}</p>
+        </section>
+
+        <section class="auth-panel">
+            <div class="auth-card">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="auth-flashes">
+                        {% for category, message in messages %}
+                        <div class="auth-flash {{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">
+                            <span>{{ message }}</span>
+                            <button type="button" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+                {% block auth_card %}{% endblock %}
+            </div>
+            <p class="auth-footer-note">Your data is only visible to your account.</p>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
