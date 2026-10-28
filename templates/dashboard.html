@@ -6,7 +6,7 @@
     <!-- Header Banner -->
     <div class="dash-welcome-header">
         <div class="dash-welcome-text">
-            <h1 id="greeting">Welcome back, {{ current_user.name.split(' ')[0] }}</h1>
+            <h1 id="greeting" data-name="{{ current_user.name.split(' ')[0] }}">Welcome back, {{ current_user.name.split(' ')[0] }}</h1>
             <p class="dash-welcome-sub" id="todayLine">Ready to unlock deep focus today?</p>
         </div>
         <div class="dash-header-actions">
@@ -506,12 +506,12 @@
 <script>
     // Greeting and date using visitor's local timezone
     (function () {
+        const el = document.getElementById('greeting');
+        const first = el ? (el.getAttribute('data-name') || '') : '';
         const now = new Date();
         const h = now.getHours();
         const part = h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-        const first = {{ current_user.name.split(' ')[0] | tojson }};
-        const el = document.getElementById('greeting');
-        if (el) el.textContent = part + ', ' + first;
+        if (el && first) el.textContent = part + ', ' + first;
         const sub = document.getElementById('todayLine');
         if (sub) sub.textContent = 'Today is ' + now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     })();
