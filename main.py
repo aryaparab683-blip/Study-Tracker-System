@@ -116,9 +116,9 @@ def create_sample_data():
     db.session.commit()
 
     subjects = [
-        Subject(name="Math", color="#f97316", user_id=sample_user.id),
-        Subject(name="Physics", color="#2563eb", user_id=sample_user.id),
-        Subject(name="Language", color="#14b8a6", user_id=sample_user.id),
+        Subject(name="Math", color="#C496A1", user_id=sample_user.id),
+        Subject(name="Physics", color="#8E88A3", user_id=sample_user.id),
+        Subject(name="Language", color="#919D85", user_id=sample_user.id),
     ]
     db.session.add_all(subjects)
     db.session.commit()

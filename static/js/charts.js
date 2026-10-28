@@ -10,12 +10,12 @@
     function getThemeColors() {
         const dark = isDarkMode();
         return {
-            text: dark ? '#94a3b8' : '#64748b',
-            textBold: dark ? '#f1f5f9' : '#0f172a',
-            grid: dark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
-            surface: dark ? '#1e293b' : '#ffffff',
-            barAccent: dark ? '#818cf8' : '#6366f1',
-            barHover: dark ? '#a5b4fc' : '#4f46e5',
+            text: dark ? '#C9C1B3' : '#5C555F',
+            textBold: dark ? '#F3EEE3' : '#2D282E',
+            grid: dark ? 'rgba(235, 225, 198, 0.08)' : 'rgba(45, 40, 46, 0.06)',
+            surface: dark ? '#2B262F' : '#FCFAF6',
+            barAccent: dark ? '#C496A1' : '#986470',
+            barHover: dark ? '#D3A9B3' : '#86555F',
         };
     }
 
@@ -32,7 +32,7 @@
         const ctx = el.getContext('2d');
         const gradient = ctx.createLinearGradient(0, 0, 0, 220);
         gradient.addColorStop(0, theme.barAccent);
-        gradient.addColorStop(1, isDarkMode() ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.35)');
+        gradient.addColorStop(1, isDarkMode() ? 'rgba(196, 150, 161, 0.2)' : 'rgba(196, 150, 161, 0.4)');
 
         sevenDayChartInstance = new Chart(el, {
             type: 'bar',
@@ -54,9 +54,9 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: isDarkMode() ? '#0f172a' : '#1e293b',
-                        titleColor: '#f8fafc',
-                        bodyColor: '#e2e8f0',
+                        backgroundColor: isDarkMode() ? '#1F1B22' : '#2D282E',
+                        titleColor: '#F3EEE3',
+                        bodyColor: '#EBE1C6',
                         padding: 10,
                         cornerRadius: 8,
                         displayColors: false,
@@ -145,9 +145,9 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: isDarkMode() ? '#0f172a' : '#1e293b',
-                        titleColor: '#f8fafc',
-                        bodyColor: '#e2e8f0',
+                        backgroundColor: isDarkMode() ? '#1F1B22' : '#2D282E',
+                        titleColor: '#F3EEE3',
+                        bodyColor: '#EBE1C6',
                         padding: 10,
                         cornerRadius: 8,
                         callbacks: {
@@ -172,12 +172,12 @@
             chart.options.scales.x.ticks.color = theme.text;
             chart.options.scales.y.ticks.color = theme.text;
             chart.options.scales.y.grid.color = theme.grid;
-            
+
             const ctx = chart.ctx;
             const gradient = ctx.createLinearGradient(0, 0, 0, 220);
             gradient.addColorStop(0, theme.barAccent);
-            gradient.addColorStop(1, isDarkMode() ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.35)');
-            
+            gradient.addColorStop(1, isDarkMode() ? 'rgba(196, 150, 161, 0.2)' : 'rgba(196, 150, 161, 0.4)');
+
             chart.data.datasets[0].backgroundColor = gradient;
             chart.data.datasets[0].hoverBackgroundColor = theme.barHover;
             chart.update();

@@ -1,0 +1,337 @@
+/* ==========================================================================
+   Study Tracker: Application Theme
+   Loaded after style.css. Applies the landing-page palette (Vintage Cream,
+   Dusty Rose, Muted Sage, Lavender) to the signed-in app, in light and dark mode.
+   ========================================================================== */
+
+:root {
+    --bg: #EBE1C6;
+    --sidebar-bg: #F3ECD8;
+    --surface: #FCFAF6;
+    --surface-hover: #F4EEDD;
+    --surface-subtle: #F7F3E9;
+    --border: rgba(45, 40, 46, 0.09);
+    --border-strong: rgba(45, 40, 46, 0.18);
+    --text-main: #2D282E;
+    --text-muted: #5C555F;
+    --text-subtle: #847B88;
+
+    --primary: #986470;
+    /* dusty rose, darkened so white text stays readable */
+    --primary-hover: #86555F;
+    --primary-light: #F7EFF1;
+    --primary-glow: rgba(196, 150, 161, 0.35);
+    --on-primary: #ffffff;
+
+    --success: #5F6D54;
+    --success-light: #EDF1EB;
+    --warning: #9A7230;
+    --warning-light: #F6EDD6;
+    --danger: #A04C5C;
+    --danger-light: #F7E9EC;
+    --info: #5F5874;
+    --info-light: #F0EFF5;
+
+    --hm-0: #E4DAC0;
+    --hm-1: #E3CFD3;
+    --hm-2: #D4AEB8;
+    --hm-3: #C496A1;
+    --hm-4: #986470;
+
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --shadow-sm: 0 2px 8px rgba(45, 40, 46, 0.04);
+    --shadow-md: 0 8px 24px -4px rgba(45, 40, 46, 0.07), 0 2px 8px -1px rgba(45, 40, 46, 0.03);
+    --shadow-lg: 0 16px 36px -6px rgba(45, 40, 46, 0.1), 0 4px 12px -2px rgba(45, 40, 46, 0.05);
+    --shadow-glow: 0 0 24px rgba(196, 150, 161, 0.3);
+}
+
+/* Warm dark mode (keeps the theme toggle working) */
+body.dark-mode {
+    --bg: #1F1B22;
+    --sidebar-bg: #26212A;
+    --surface: #2B262F;
+    --surface-hover: #353039;
+    --surface-subtle: #302B34;
+    --border: rgba(235, 225, 198, 0.1);
+    --border-strong: rgba(235, 225, 198, 0.2);
+    --text-main: #F3EEE3;
+    --text-muted: #C9C1B3;
+    --text-subtle: #9B93A0;
+
+    --primary: #C496A1;
+    --primary-hover: #D3A9B3;
+    --primary-light: rgba(196, 150, 161, 0.16);
+    --primary-glow: rgba(196, 150, 161, 0.35);
+    --on-primary: #2D282E;
+
+    --success: #A9B79C;
+    --success-light: rgba(145, 157, 133, 0.18);
+    --warning: #D9B56A;
+    --warning-light: rgba(217, 181, 106, 0.16);
+    --danger: #E0909F;
+    --danger-light: rgba(224, 144, 159, 0.16);
+    --info: #B3ADC6;
+    --info-light: rgba(142, 136, 163, 0.2);
+
+    --hm-0: #3A343E;
+    --hm-1: #55414A;
+    --hm-2: #7D5A67;
+    --hm-3: #A97985;
+    --hm-4: #D3A9B3;
+}
+
+/* ---- Page + chrome ---- */
+body {
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(circle at 10% 15%, rgba(247, 243, 233, 0.8) 0%, transparent 40%),
+        radial-gradient(circle at 92% 85%, rgba(247, 239, 241, 0.6) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+body.dark-mode {
+    background-image: none;
+}
+
+.app-sidebar {
+    box-shadow: none;
+}
+
+.topbar-header {
+    background-color: rgba(235, 225, 198, 0.9);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+body.dark-mode .topbar-header {
+    background-color: rgba(31, 27, 34, 0.9);
+}
+
+.brand-icon {
+    background: #8E88A3;
+    box-shadow: 0 4px 10px rgba(142, 136, 163, 0.35);
+    border-radius: 12px;
+}
+
+.brand-title {
+    letter-spacing: -0.02em;
+}
+
+.brand-tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid rgba(196, 150, 161, 0.3);
+}
+
+.user-avatar {
+    background: #8E88A3;
+    color: #fff;
+}
+
+.nav-link {
+    border-radius: var(--radius-md);
+}
+
+.nav-link.active {
+    background-color: #F7EFF1;
+    color: #986470;
+}
+
+body.dark-mode .nav-link.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+/* ---- Cards ---- */
+.card,
+.profile-grid>div,
+.table-card,
+.list-card,
+.note-card {
+    background-color: var(--surface);
+    border: 1px solid rgba(196, 150, 161, 0.22);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(196, 150, 161, 0.38);
+}
+
+/* ---- Buttons ---- */
+.btn-primary-pill,
+.btn-timer-primary,
+button.primary,
+.primary {
+    background: var(--primary);
+    color: var(--on-primary) !important;
+    box-shadow: 0 6px 16px rgba(152, 100, 112, 0.28);
+}
+
+.btn-primary-pill:hover,
+.btn-timer-primary:hover,
+button.primary:hover,
+.primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-primary-pill {
+    border-radius: var(--radius-full);
+}
+
+/* ---- Inputs ---- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    background-color: #fff;
+    border-color: rgba(45, 40, 46, 0.14);
+    border-radius: var(--radius-md);
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="date"],
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: var(--surface-subtle);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #7D7694 !important;
+    box-shadow: 0 0 0 4px rgba(142, 136, 163, 0.22) !important;
+}
+
+/* ---- Dashboard accents: swap indigo/purple for the palette ---- */
+.icon-indigo {
+    background-color: #F0EFF5;
+    color: #5F5874;
+}
+
+.icon-amber {
+    background-color: #F6EDD6;
+    color: #9A7230;
+}
+
+.icon-emerald {
+    background-color: #EDF1EB;
+    color: #5F6D54;
+}
+
+.icon-rose {
+    background-color: #F7EFF1;
+    color: #986470;
+}
+
+.goal-badge-icon {
+    background-color: rgba(142, 136, 163, 0.18);
+    color: #5F5874;
+}
+
+body.dark-mode .icon-indigo {
+    background-color: rgba(142, 136, 163, .2);
+    color: #B3ADC6;
+}
+
+body.dark-mode .icon-amber {
+    background-color: rgba(217, 181, 106, .16);
+    color: #D9B56A;
+}
+
+body.dark-mode .icon-emerald {
+    background-color: rgba(145, 157, 133, .18);
+    color: #A9B79C;
+}
+
+body.dark-mode .icon-rose {
+    background-color: rgba(196, 150, 161, .16);
+    color: #C496A1;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #919D85, #C496A1);
+}
+
+.timer-ring-progress {
+    stroke: #C496A1;
+    filter: none;
+}
+
+.heatmap-cell {
+    border-radius: 4px;
+}
+
+.mode-pill.active {
+    color: var(--primary);
+}
+
+/* ---- Flash messages ---- */
+.flash-alert.success {
+    background: #EDF1EB;
+    color: #4C5942;
+    border-color: rgba(145, 157, 133, .45);
+}
+
+.flash-alert.error {
+    background: #F7EFF1;
+    color: #7C4450;
+    border-color: rgba(196, 150, 161, .5);
+}
+
+.flash-alert.info {
+    background: #F0EFF5;
+    color: #5F5874;
+    border-color: rgba(142, 136, 163, .4);
+}
+
+body.dark-mode .flash-alert.success {
+    background: rgba(145, 157, 133, .18);
+    color: #A9B79C;
+}
+
+body.dark-mode .flash-alert.error {
+    background: rgba(224, 144, 159, .16);
+    color: #E0909F;
+}
+
+body.dark-mode .flash-alert.info {
+    background: rgba(142, 136, 163, .2);
+    color: #B3ADC6;
+}
+
+/* ---- Calendar ---- */
+.calendar-card {
+    background-color: #F0EFF5;
+    border-left-color: #8E88A3;
+}
+
+body.dark-mode .calendar-card {
+    background-color: rgba(142, 136, 163, .2);
+}
+
+/* ---- Headings: same tight weight as the landing page ---- */
+h1,
+h2,
+h3,
+.metric-value,
+.dash-welcome-header {
+    letter-spacing: -0.025em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

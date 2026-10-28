@@ -84,11 +84,11 @@ def dashboard_view():
         .all()
     )
     subject_breakdown = [
-        {"name": s.name, "count": counts.get(s.id, 0), "color": s.color or "#6366f1"}
+        {"name": s.name, "count": counts.get(s.id, 0), "color": s.color or "#8E88A3"}
         for s in subjects if counts.get(s.id, 0) > 0
     ]
     if counts.get(None, 0) > 0:
-        subject_breakdown.append({"name": "General", "count": counts[None], "color": "#94a3b8"})
+        subject_breakdown.append({"name": "General", "count": counts[None], "color": "#A89F91"})
 
     # --- 16-Week Heatmap grid (starts on a Sunday) and per-day totals, bucketed by the user's local day ---
     total_heatmap_days = 16 * 7  # 112 days
@@ -254,7 +254,7 @@ def delete_session(session_id):
 def subjects():
     if request.method == "POST":
         name, error = form_text("name", 80, "Subject name")
-        color = request.form.get("color") or "#6366f1"
+        color = request.form.get("color") or "#8E88A3"
         if not error and not valid_color(color):
             error = "Please choose a valid color."
         if not error and subject_name_taken(name):
